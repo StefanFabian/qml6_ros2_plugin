@@ -1,9 +1,9 @@
 name: Build & Test
 on:
   push:
-    branches: [ rolling-qt6 ]
+    branches: [ rolling ]
   pull_request:
-    branches: [ rolling-qt6 ]
+    branches: [ rolling ]
 defaults:
   run:
     shell: bash
