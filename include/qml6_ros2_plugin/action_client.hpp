@@ -4,16 +4,16 @@
 #ifndef QML_ROS2_PLUGIN_ACTION_CLIENT_HPP
 #define QML_ROS2_PLUGIN_ACTION_CLIENT_HPP
 
-#include "qml_ros2_plugin/goal_status.hpp"
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/goal_status.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <ros_babel_fish/babel_fish.hpp>
 
 #include <QJSValue>
 #include <QTimer>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 class NodeHandle;
 
@@ -58,7 +58,7 @@ public:
 
   //! Cancels all goals that were sent at and before the given ROS time by this client.
   //! Use Time.now() to obtain the current ROS time which can differ from the actual time.
-  Q_INVOKABLE void cancelGoalsBefore( const qml_ros2_plugin::Time &time );
+  Q_INVOKABLE void cancelGoalsBefore( const qml6_ros2_plugin::Time &time );
 
   //! @copydoc cancelGoalsBefore(const Time&)
   Q_INVOKABLE void cancelGoalsBefore( const QDateTime &time );
@@ -81,7 +81,7 @@ private slots:
                                ros_babel_fish::CompoundMessage::ConstSharedPtr feedback );
 
   void invokeResultCallback( QJSValue callback, QString goal_id,
-                             qml_ros2_plugin::action_goal_status::GoalStatus result_code,
+                             qml6_ros2_plugin::action_goal_status::GoalStatus result_code,
                              ros_babel_fish::CompoundMessage::ConstSharedPtr result );
 
 private:
@@ -95,7 +95,7 @@ private:
   ros_babel_fish::BabelFishActionClient::SharedPtr client_;
   QTimer connect_timer_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 Q_DECLARE_METATYPE( ros_babel_fish::BabelFishActionClient::GoalHandle::SharedPtr )
 

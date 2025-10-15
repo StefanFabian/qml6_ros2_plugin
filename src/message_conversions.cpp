@@ -1,13 +1,13 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QAbstractListModel>
 #include <QDateTime>
@@ -23,7 +23,7 @@
 
 using namespace ros_babel_fish;
 
-namespace qml_ros2_plugin::conversion
+namespace qml6_ros2_plugin::conversion
 {
 
 QVariantMap msgToMap( const std_msgs::msg::Header &msg )
@@ -553,7 +553,7 @@ bool isCompatible<rclcpp::Time>( const QVariant &variant )
   return variant.typeId() == QMetaType::Double || variant.typeId() == QMetaType::UInt ||
          variant.typeId() == QMetaType::Int || variant.typeId() == QMetaType::ULongLong ||
          variant.typeId() == QMetaType::LongLong || variant.typeId() == QMetaType::QDateTime ||
-         variant.typeName() == std::string( "qml_ros2_plugin::Time" );
+         variant.typeName() == std::string( "qml6_ros2_plugin::Time" );
 }
 
 template<>
@@ -562,7 +562,7 @@ bool isCompatible<rclcpp::Duration>( const QVariant &variant )
   return variant.typeId() == QMetaType::Double || variant.typeId() == QMetaType::UInt ||
          variant.typeId() == QMetaType::Int || variant.typeId() == QMetaType::ULongLong ||
          variant.typeId() == QMetaType::LongLong ||
-         variant.typeName() == std::string( "qml_ros2_plugin::Duration" );
+         variant.typeName() == std::string( "qml6_ros2_plugin::Duration" );
 }
 
 template<typename T>
@@ -1086,4 +1086,4 @@ bool fillMessage( BabelFish &fish, Message &msg, const QVariant &value )
   }
   return false;
 }
-} // namespace qml_ros2_plugin::conversion
+} // namespace qml6_ros2_plugin::conversion

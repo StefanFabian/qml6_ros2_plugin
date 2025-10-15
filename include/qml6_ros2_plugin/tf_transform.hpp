@@ -10,7 +10,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <memory>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 /*!
  * Represents a tf transform between source and target frame.
@@ -110,6 +110,6 @@ protected:
   bool subscribed_;
   bool enabled_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_TF_TRANSFORM_HPP

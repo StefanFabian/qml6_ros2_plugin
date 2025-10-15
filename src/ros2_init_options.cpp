@@ -1,9 +1,9 @@
 // Copyright (c) 2025 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/ros2_init_options.hpp"
+#include "qml6_ros2_plugin/ros2_init_options.hpp"
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 Ros2InitOptions::Ros2InitOptions( QObject *parent ) : QObject( parent ) { }
@@ -33,4 +33,4 @@ QObject *Ros2InitOptions::useDefaultDomainId()
 }
 
 const rclcpp::InitOptions &Ros2InitOptions::rclcppInitOptions() const { return options_; }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

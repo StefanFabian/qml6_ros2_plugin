@@ -23,7 +23,7 @@ First, you need to initialize the node used by your QML application, e.g., in th
   }
 
 You can also conditionally initialize by checking if it was already initialized using ``Ros2.isRosInitialized``.
-As described in the API documentation for :cpp:func:`Ros2.init <qml_ros2_plugin::Ros2QmlSingletonWrapper::init>`, you can pass either just the
+As described in the API documentation for :cpp:func:`Ros2.init <qml6_ros2_plugin::Ros2QmlSingletonWrapper::init>`, you can pass either just the
 node name or additionally use provided command line args instead of the command
 line args provided to your executable.
 
@@ -133,17 +133,17 @@ You can also save and read data that can be serialized in the yaml format using:
 API
 ---
 
-.. doxygenclass:: qml_ros2_plugin::Ros2InitOptions
+.. doxygenclass:: qml6_ros2_plugin::Ros2InitOptions
   :members:
 
-.. doxygenclass:: qml_ros2_plugin::TopicInfo
+.. doxygenclass:: qml6_ros2_plugin::TopicInfo
   :members:
 
-.. doxygenclass:: qml_ros2_plugin::IO
+.. doxygenclass:: qml6_ros2_plugin::IO
   :members:
 
-.. doxygenclass:: qml_ros2_plugin::QoSWrapper
+.. doxygenclass:: qml6_ros2_plugin::QoSWrapper
   :members:
 
-.. doxygenclass:: qml_ros2_plugin::Ros2QmlSingletonWrapper
+.. doxygenclass:: qml6_ros2_plugin::Ros2QmlSingletonWrapper
   :members:

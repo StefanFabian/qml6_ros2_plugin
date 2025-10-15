@@ -5,9 +5,9 @@
 #define QML_ROS2_PLUGIN_MESSAGE_COMPARISON_HPP
 
 #include "common.hpp"
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <example_interfaces/srv/add_two_ints.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -19,7 +19,7 @@
 #include <QDateTime>
 #include <QVariant>
 
-using namespace qml_ros2_plugin;
+using namespace qml6_ros2_plugin;
 using namespace ros_babel_fish;
 using namespace ros_babel_fish_test_msgs::msg;
 

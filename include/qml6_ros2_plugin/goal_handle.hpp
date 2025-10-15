@@ -4,14 +4,14 @@
 #ifndef QML_ROS2_PLUGIN_GOAL_HANDLE_HPP
 #define QML_ROS2_PLUGIN_GOAL_HANDLE_HPP
 
-#include "qml_ros2_plugin/goal_status.hpp"
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/goal_status.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QTimer>
 #include <ros_babel_fish/babel_fish.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class GoalHandle : public QObjectRos2
@@ -19,9 +19,9 @@ class GoalHandle : public QObjectRos2
   Q_OBJECT
   //! The goal status in form of an action_goal_status enum value:
   //! Aborted, Accepted, Canceled, Canceling, Executing, Succeeded, Unknown
-  Q_PROPERTY( qml_ros2_plugin::action_goal_status::GoalStatus status READ status NOTIFY statusChanged )
+  Q_PROPERTY( qml6_ros2_plugin::action_goal_status::GoalStatus status READ status NOTIFY statusChanged )
   Q_PROPERTY( QString goalId READ goalId )
-  Q_PROPERTY( qml_ros2_plugin::Time goalStamp READ goalStamp )
+  Q_PROPERTY( qml6_ros2_plugin::Time goalStamp READ goalStamp )
 public:
   GoalHandle( ros_babel_fish::BabelFishActionClient::SharedPtr client,
               ros_babel_fish::BabelFishActionClient::GoalHandle::SharedPtr handle );
@@ -29,17 +29,17 @@ public:
   GoalHandle( ros_babel_fish::BabelFishActionClient::SharedPtr client,
               std::shared_future<ros_babel_fish::BabelFishActionClient::GoalHandle::SharedPtr> handle );
 
-  qml_ros2_plugin::action_goal_status::GoalStatus status() const;
+  qml6_ros2_plugin::action_goal_status::GoalStatus status() const;
 
   QString goalId() const;
 
-  qml_ros2_plugin::Time goalStamp() const;
+  qml6_ros2_plugin::Time goalStamp() const;
 
   //! Sends a cancellation request to the ActionServer.
   Q_INVOKABLE void cancel();
 
 signals:
-  void statusChanged( qml_ros2_plugin::action_goal_status::GoalStatus status );
+  void statusChanged( qml6_ros2_plugin::action_goal_status::GoalStatus status );
 
 protected:
   void onRos2Shutdown() override;
@@ -57,6 +57,6 @@ private:
   mutable std::shared_future<ros_babel_fish::BabelFishActionClient::GoalHandle::SharedPtr> goal_handle_future_;
   action_goal_status::GoalStatus status_ = action_goal_status::Unknown;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_GOAL_HANDLE_HPP

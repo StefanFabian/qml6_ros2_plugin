@@ -62,11 +62,11 @@ to cancel the goal. The goal_handle passed to the callbacks and the one returned
 API
 ---
 
-.. doxygenclass:: qml_ros2_plugin::ActionClient
+.. doxygenclass:: qml6_ros2_plugin::ActionClient
    :members:
 
-.. doxygenclass:: qml_ros2_plugin::GoalHandle
+.. doxygenclass:: qml6_ros2_plugin::GoalHandle
    :members:
 
-.. doxygenenum:: qml_ros2_plugin::action_goal_status::GoalStatus
+.. doxygenenum:: qml6_ros2_plugin::action_goal_status::GoalStatus
    :project: project

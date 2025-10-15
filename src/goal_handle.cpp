@@ -1,17 +1,17 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/goal_handle.hpp"
+#include "qml6_ros2_plugin/goal_handle.hpp"
 
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
 
 using namespace ros_babel_fish;
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 using namespace std::chrono_literals;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 GoalHandle::GoalHandle( BabelFishActionClient::SharedPtr client,
@@ -50,7 +50,7 @@ void GoalHandle::cancel()
   client_->async_cancel_goal( goal_handle_ );
 }
 
-qml_ros2_plugin::action_goal_status::GoalStatus GoalHandle::status() const
+qml6_ros2_plugin::action_goal_status::GoalStatus GoalHandle::status() const
 {
   checkFuture();
   if ( goal_handle_ == nullptr )
@@ -66,7 +66,7 @@ QString GoalHandle::goalId() const
   return conversion::uuidToString( goal_handle_->get_goal_id() );
 }
 
-qml_ros2_plugin::Time GoalHandle::goalStamp() const
+qml6_ros2_plugin::Time GoalHandle::goalStamp() const
 {
   checkFuture();
   if ( goal_handle_ == nullptr )
@@ -126,4 +126,4 @@ void GoalHandle::updateStatus()
   }
 }
 
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

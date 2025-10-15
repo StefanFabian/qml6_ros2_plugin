@@ -23,7 +23,7 @@
 #ifndef QVARIANT_YAML_CONVERSION_H
 #define QVARIANT_YAML_CONVERSION_H
 
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QAbstractListModel>
 #include <QDateTime>
@@ -34,8 +34,8 @@
 namespace YAML
 {
 template<>
-struct convert<qml_ros2_plugin::Time> {
-  static Node encode( const qml_ros2_plugin::Time &time )
+struct convert<qml6_ros2_plugin::Time> {
+  static Node encode( const qml6_ros2_plugin::Time &time )
   {
     YAML::Node result;
     builtin_interfaces::msg::Time msg = time.getTime();
@@ -46,7 +46,7 @@ struct convert<qml_ros2_plugin::Time> {
     return result;
   }
 
-  static bool decode( const Node &node, qml_ros2_plugin::Time &out )
+  static bool decode( const Node &node, qml6_ros2_plugin::Time &out )
   {
     if ( !node.IsMap() )
       return false;
@@ -59,14 +59,14 @@ struct convert<qml_ros2_plugin::Time> {
     msg.sec = node["sec"].as<int32_t>();
     msg.nanosec = node["nanosec"].as<uint32_t>();
     rclcpp::Time time = msg;
-    out = qml_ros2_plugin::Time( rclcpp::Time( time.nanoseconds(), clock_type ) );
+    out = qml6_ros2_plugin::Time( rclcpp::Time( time.nanoseconds(), clock_type ) );
     return true;
   }
 };
 
 template<>
-struct convert<qml_ros2_plugin::Duration> {
-  static Node encode( const qml_ros2_plugin::Duration &duration )
+struct convert<qml6_ros2_plugin::Duration> {
+  static Node encode( const qml6_ros2_plugin::Duration &duration )
   {
     YAML::Node result;
     builtin_interfaces::msg::Duration msg = duration.getDuration();
@@ -76,14 +76,14 @@ struct convert<qml_ros2_plugin::Duration> {
     return result;
   }
 
-  static bool decode( const Node &node, qml_ros2_plugin::Duration &out )
+  static bool decode( const Node &node, qml6_ros2_plugin::Duration &out )
   {
     if ( !node.IsMap() )
       return false;
     builtin_interfaces::msg::Duration msg;
     msg.sec = node["sec"].as<int32_t>();
     msg.nanosec = node["nanosec"].as<uint32_t>();
-    out = qml_ros2_plugin::Duration( rclcpp::Duration( msg ) );
+    out = qml6_ros2_plugin::Duration( rclcpp::Duration( msg ) );
     return true;
   }
 };
@@ -184,11 +184,11 @@ struct convert<QVariant> {
       const auto &map = variant.value<QVariantMap>();
       result = map;
       return result;
-    } else if ( variant.canConvert<qml_ros2_plugin::Time>() ) {
-      result = variant.value<qml_ros2_plugin::Time>();
+    } else if ( variant.canConvert<qml6_ros2_plugin::Time>() ) {
+      result = variant.value<qml6_ros2_plugin::Time>();
       return result;
-    } else if ( variant.canConvert<qml_ros2_plugin::Duration>() ) {
-      result = variant.value<qml_ros2_plugin::Duration>();
+    } else if ( variant.canConvert<qml6_ros2_plugin::Duration>() ) {
+      result = variant.value<qml6_ros2_plugin::Duration>();
       return result;
     } else if ( variant.canConvert<QDateTime>() && variant.value<QDateTime>().isValid() ) {
       result = variant.value<QDateTime>().toString( Qt::ISODateWithMs ).toStdString();
@@ -268,10 +268,10 @@ struct convert<QVariant> {
       if ( node["type"].IsDefined() ) {
         const std::string &type = node["type"].as<std::string>();
         if ( type == "time" ) {
-          out = QVariant::fromValue( node.as<qml_ros2_plugin::Time>() );
+          out = QVariant::fromValue( node.as<qml6_ros2_plugin::Time>() );
           return true;
         } else if ( type == "duration" ) {
-          out = QVariant::fromValue( node.as<qml_ros2_plugin::Duration>() );
+          out = QVariant::fromValue( node.as<qml6_ros2_plugin::Duration>() );
           return true;
         }
       }

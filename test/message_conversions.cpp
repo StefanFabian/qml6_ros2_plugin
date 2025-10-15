@@ -4,10 +4,10 @@
 #include "common.hpp"
 #include "message_comparison.hpp"
 
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 #include <ros_babel_fish_test_msgs/msg/test_message.hpp>
 
 #include <QAbstractListModel>
@@ -16,8 +16,8 @@
 #include <QQmlComponent>
 #include <QQmlEngine>
 
-using namespace qml_ros2_plugin;
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin;
+using namespace qml6_ros2_plugin::conversion;
 using namespace ros_babel_fish;
 using namespace ros_babel_fish_test_msgs::msg;
 
@@ -580,8 +580,8 @@ QtObject {
 
 TEST( MessageConversion, timeConversion )
 {
-  //  qml_ros2_plugin::WallTimeSingleton wall_time; // TODO
-  //  qml_ros2_plugin::TimeSingleton time;
+  //  qml6_ros2_plugin::WallTimeSingleton wall_time; // TODO
+  //  qml6_ros2_plugin::TimeSingleton time;
   //  // It should always round down to prevent issues with look ups into the future
   //  EXPECT_EQ( ros::Time( 13, 1000000 ), qmlToRos2Time( rosToQmlTime( ros::Time( 13, 1500000 ))));
   //  EXPECT_EQ( ros::Time( 13, 0 ), qmlToRos2Time( rosToQmlTime( ros::Time( 13, 900000 ))));

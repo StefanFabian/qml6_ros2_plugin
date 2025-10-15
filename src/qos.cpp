@@ -1,9 +1,9 @@
 // Copyright (c) 2025 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 QoSWrapper::QoSWrapper() : qos_( 1 )
 {
@@ -43,7 +43,7 @@ QoSWrapper QoSWrapper::keep_all()
   return *this;
 }
 
-qml_ros2_plugin::QoSWrapper QoSWrapper::keep_last( int depth )
+qml6_ros2_plugin::QoSWrapper QoSWrapper::keep_last( int depth )
 {
   qos_.keep_last( depth );
   return *this;
@@ -112,4 +112,4 @@ std::string QoSWrapper::toString() const
   result += "depth: " + std::to_string( qos_.depth() ) + ")";
   return result;
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

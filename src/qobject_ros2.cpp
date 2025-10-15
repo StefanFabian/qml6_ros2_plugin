@@ -1,12 +1,12 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 
 #include <QCoreApplication>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 QObjectRos2::QObjectRos2( QObject *parent ) : QObject( parent ), is_initialized_( false )
@@ -45,4 +45,4 @@ void QObjectRos2::_shutdown()
   onRos2Shutdown();
   is_initialized_ = false;
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

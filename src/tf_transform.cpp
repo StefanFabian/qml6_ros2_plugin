@@ -1,15 +1,15 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/tf_transform.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/tf_transform_listener.hpp"
+#include "qml6_ros2_plugin/tf_transform.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/tf_transform_listener.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 TfTransform::TfTransform() : update_interval_( 1000 / 60 ), subscribed_( false ), enabled_( true )
@@ -210,4 +210,4 @@ void TfTransform::updateMessage()
     emit messageChanged();
   }
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

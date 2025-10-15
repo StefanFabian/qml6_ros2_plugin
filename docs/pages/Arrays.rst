@@ -7,12 +7,12 @@ Because the array is not copied into a QML compatible array container, access ha
 **Example**: Instead of ``path.to.array[1].someproperty``, you would write
 ``path.to.array.at(1).someproperty``.
 
-If you need the array as a javascript array, you can use :cpp:func:`toArray <qml_ros2_plugin::Array::toArray>`
+If you need the array as a javascript array, you can use :cpp:func:`toArray <qml6_ros2_plugin::Array::toArray>`
 to copy the entire array and return it as a javascript array.
 The copy is only performed on the first call, subsequent calls should have
 less overhead.
 
 API
 ---
-.. doxygenclass:: qml_ros2_plugin::Array
+.. doxygenclass:: qml6_ros2_plugin::Array
   :members:

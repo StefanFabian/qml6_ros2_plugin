@@ -7,7 +7,7 @@
 #include <QMetaEnum>
 #include <rclcpp_action/types.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 namespace action_goal_status
@@ -25,8 +25,8 @@ enum GoalStatus {
 
 Q_ENUM_NS( GoalStatus )
 } // namespace action_goal_status
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::action_goal_status::GoalStatus )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::action_goal_status::GoalStatus )
 
 #endif // QML_ROS2_PLUGIN_GOAL_STATUS_HPP

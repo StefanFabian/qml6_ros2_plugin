@@ -8,7 +8,7 @@
 #include <QtCore>
 #include <rclcpp/logging.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 namespace ros2_logger_levels
@@ -40,7 +40,7 @@ public:
   explicit Logger( const rclcpp::Logger &logger );
 
   // Type needs to be explicit so QML will recognize it
-  Q_INVOKABLE bool setLoggerLevel( qml_ros2_plugin::ros2_logger_levels::Ros2LoggerLevel level );
+  Q_INVOKABLE bool setLoggerLevel( qml6_ros2_plugin::ros2_logger_levels::Ros2LoggerLevel level );
 
   /*!
    * Outputs a ROS debug message. The equivalent of calling ROS_DEBUG in C++.
@@ -121,8 +121,8 @@ private:
   QJSValue error_function_;
   QJSValue fatal_function_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::ros2_logger_levels::Ros2LoggerLevel )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::ros2_logger_levels::Ros2LoggerLevel )
 
 #endif // QML_ROS2_PLUGIN_LOGGER_HPP

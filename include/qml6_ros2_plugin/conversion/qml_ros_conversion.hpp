@@ -9,7 +9,7 @@
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 inline int64_t milliseconds_to_nanoseconds( double milliseconds )
@@ -49,6 +49,6 @@ inline QDateTime rosToQmlTime( const rclcpp::Time &time )
   // Always round down because otherwise high precision stuff like tf might fail due to, e.g., look up into future
   return QDateTime::fromMSecsSinceEpoch( time.nanoseconds() / static_cast<qint64>( 1E6 ) );
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_QML_ROS_CONVERSION_HPP

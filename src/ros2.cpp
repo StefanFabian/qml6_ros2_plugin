@@ -1,15 +1,15 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/ros2.hpp"
-#include "qml_ros2_plugin/action_client.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/publisher.hpp"
-#include "qml_ros2_plugin/qos.hpp"
-#include "qml_ros2_plugin/service_client.hpp"
-#include "qml_ros2_plugin/subscription.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/action_client.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/publisher.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/service_client.hpp"
+#include "qml6_ros2_plugin/subscription.hpp"
 
 #include <QCoreApplication>
 #include <QHostInfo>
@@ -17,7 +17,7 @@
 #include <rcl_action/graph.h>
 #include <thread>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 Ros2Qml &Ros2Qml::getInstance()
@@ -574,7 +574,7 @@ QJSValue Ros2QmlSingletonWrapper::fatal()
 }
 
 QObject *Ros2QmlSingletonWrapper::createPublisher( const QString &topic, const QString &type,
-                                                   const qml_ros2_plugin::QoSWrapper &qos )
+                                                   const qml6_ros2_plugin::QoSWrapper &qos )
 {
   return new Publisher( topic, type, qos );
 }
@@ -614,7 +614,7 @@ QObject *Ros2QmlSingletonWrapper::createServiceClient( const QString &name, cons
 }
 
 QObject *Ros2QmlSingletonWrapper::createServiceClient( const QString &name, const QString &type,
-                                                       const qml_ros2_plugin::QoSWrapper &qos )
+                                                       const qml6_ros2_plugin::QoSWrapper &qos )
 {
   return new ServiceClient( name, type, qos );
 }
@@ -636,4 +636,4 @@ bool Ros2QmlSingletonWrapper::initLogging()
   logger_ = qjsEngine( this )->newQObject( new Logger( node->get_logger() ) );
   return true;
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

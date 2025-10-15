@@ -6,7 +6,7 @@
 
 #include <array>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 template<typename T, int COUNT>
@@ -37,6 +37,6 @@ private:
   size_t count_values_ = 0;
   size_t index_ = 0;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_ROLLING_AVERAGE_H

@@ -3,14 +3,14 @@
 
 #include "common.hpp"
 
-#include <qml_ros2_plugin/publisher.hpp>
-#include <qml_ros2_plugin/ros2.hpp>
-#include <qml_ros2_plugin/tf_transform_listener.hpp>
-#include <qml_ros2_plugin/time.hpp>
+#include <qml6_ros2_plugin/publisher.hpp>
+#include <qml6_ros2_plugin/ros2.hpp>
+#include <qml6_ros2_plugin/tf_transform_listener.hpp>
+#include <qml6_ros2_plugin/time.hpp>
 
 #include <QCoreApplication>
 
-using namespace qml_ros2_plugin;
+using namespace qml6_ros2_plugin;
 using namespace std::chrono_literals;
 
 //! @param wait_count Max time to wait in increments of 33 ms
@@ -39,11 +39,11 @@ TEST( Ros2LifeCycle, testLifeCycle )
 {
   {
     MockRos2 mock_ros;
-    qml_ros2_plugin::Ros2QmlSingletonWrapper ros_wrapper;
-    qml_ros2_plugin::TfTransformListenerWrapper tf_wrapper;
+    qml6_ros2_plugin::Ros2QmlSingletonWrapper ros_wrapper;
+    qml6_ros2_plugin::TfTransformListenerWrapper tf_wrapper;
     EXPECT_FALSE( ros_wrapper.isInitialized() );
     EXPECT_FALSE( Ros2Qml::getInstance().isInitialized() );
-    EXPECT_FALSE( qml_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
+    EXPECT_FALSE( qml6_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
     EXPECT_EQ( tf_wrapper.lookUpTransform( "frame2", "frame1" )["exception"].toString(),
                QString( "Uninitialized" ) );
     EXPECT_EQ(
@@ -51,7 +51,7 @@ TEST( Ros2LifeCycle, testLifeCycle )
             .lookUpTransform( "frame2", QDateTime(), "frame1", QDateTime(), "frame1" )["exception"]
             .toString(),
         QString( "Uninitialized" ) );
-    auto publisher_before_init = dynamic_cast<qml_ros2_plugin::Publisher *>(
+    auto publisher_before_init = dynamic_cast<qml6_ros2_plugin::Publisher *>(
         ros_wrapper.createPublisher( "/pose_stamped", "geometry_msgs/PoseStamped", 10 ) );
     ASSERT_NE( publisher_before_init, nullptr );
     QCoreApplication::processEvents();
@@ -75,10 +75,10 @@ TEST( Ros2LifeCycle, testLifeCycle )
     EXPECT_TRUE( ros_wrapper.ok() );
     EXPECT_EQ( tf_wrapper.lookUpTransform( "frame2", "frame1" )["exception"].toString(),
                QString( "LookupException" ) );
-    EXPECT_TRUE( qml_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
+    EXPECT_TRUE( qml6_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
     QCoreApplication::processEvents();
 
-    auto publisher_after_init = dynamic_cast<qml_ros2_plugin::Publisher *>(
+    auto publisher_after_init = dynamic_cast<qml6_ros2_plugin::Publisher *>(
         ros_wrapper.createPublisher( "/pose_stamped2", "geometry_msgs/PoseStamped", 10 ) );
     EXPECT_TRUE( waitFor( [&]() { return publisher_after_init->isAdvertised(); } ) );
     QCoreApplication::processEvents();
@@ -89,8 +89,8 @@ TEST( Ros2LifeCycle, testLifeCycle )
     ros_wrapper.shutdown();
   }
   // After shutdown everything should be uninitialized again
-  EXPECT_FALSE( qml_ros2_plugin::Ros2Qml::getInstance().isInitialized() );
-  EXPECT_FALSE( qml_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
+  EXPECT_FALSE( qml6_ros2_plugin::Ros2Qml::getInstance().isInitialized() );
+  EXPECT_FALSE( qml6_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
 }
 
 int main( int argc, char **argv )

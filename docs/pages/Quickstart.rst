@@ -13,8 +13,8 @@ Installation
 From Source
 -----------
 
-To install ``qml_ros2_plugin`` from source, clone the
-`repo <https://github.com/StefanFabian/qml_ros2_plugin>`_.
+To install ``qml6_ros2_plugin`` from source, clone the
+`repo <https://github.com/StefanFabian/qml6_ros2_plugin>`_.
 Now, you have two options: You can either install the plugin in your ROS2 overlay which makes the plugin
 available only if you've sourced the overlay in your environment.
 Alternatively, you can enable the global install, to install it system-wide on linux.

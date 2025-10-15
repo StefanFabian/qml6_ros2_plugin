@@ -1,15 +1,15 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/subscription.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/subscription.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 Subscription::Subscription()
@@ -223,4 +223,4 @@ void Subscription::updateMessage()
   }
   message_queue_.clear();
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

@@ -1,19 +1,19 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/tf_transform_listener.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/tf_transform_listener.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 
 #include <QVariantMap>
 #include <memory>
 #include <tf2_ros/transform_listener.h>
 
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 struct TfTransformListener::State {
@@ -341,4 +341,4 @@ QVariant TfTransformListenerWrapper::canTransform( const QString &target_frame,
                                                           source_frame, source_time.getTime(),
                                                           fixed_frame, timeout );
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

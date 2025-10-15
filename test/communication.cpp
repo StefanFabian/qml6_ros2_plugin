@@ -4,15 +4,15 @@
 #include "common.hpp"
 #include "message_comparison.hpp"
 
-#include <qml_ros2_plugin/action_client.hpp>
-#include <qml_ros2_plugin/goal_handle.hpp>
-#include <qml_ros2_plugin/publisher.hpp>
-#include <qml_ros2_plugin/ros2.hpp>
-#include <qml_ros2_plugin/service_client.hpp>
-#include <qml_ros2_plugin/subscription.hpp>
-#include <qml_ros2_plugin/tf_transform.hpp>
-#include <qml_ros2_plugin/tf_transform_listener.hpp>
-#include <qml_ros2_plugin/time.hpp>
+#include <qml6_ros2_plugin/action_client.hpp>
+#include <qml6_ros2_plugin/goal_handle.hpp>
+#include <qml6_ros2_plugin/publisher.hpp>
+#include <qml6_ros2_plugin/ros2.hpp>
+#include <qml6_ros2_plugin/service_client.hpp>
+#include <qml6_ros2_plugin/subscription.hpp>
+#include <qml6_ros2_plugin/tf_transform.hpp>
+#include <qml6_ros2_plugin/tf_transform_listener.hpp>
+#include <qml6_ros2_plugin/time.hpp>
 
 #include <example_interfaces/srv/add_two_ints.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -28,7 +28,7 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-using namespace qml_ros2_plugin;
+using namespace qml6_ros2_plugin;
 using namespace std::chrono_literals;
 
 template<typename T>
@@ -61,7 +61,7 @@ bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeo
 TEST( Communication, publisher )
 {
   Ros2QmlSingletonWrapper wrapper;
-  auto pub_singleton_private = dynamic_cast<qml_ros2_plugin::Publisher *>(
+  auto pub_singleton_private = dynamic_cast<qml6_ros2_plugin::Publisher *>(
       wrapper.createPublisher( "~/private_ns/test", "geometry_msgs/msg/Pose", 10 ) );
   ASSERT_NE( pub_singleton_private, nullptr );
   QCoreApplication::processEvents();
@@ -85,7 +85,7 @@ TEST( Communication, publisher )
   EXPECT_EQ( pub_singleton_private_storage.messages[0].position.x, 1.2 );
   delete pub_singleton_private;
 
-  auto pub_singleton_glob_explicit = dynamic_cast<qml_ros2_plugin::Publisher *>(
+  auto pub_singleton_glob_explicit = dynamic_cast<qml6_ros2_plugin::Publisher *>(
       wrapper.createPublisher( "/pose", "geometry_msgs/msg/Pose", 10 ) );
   ASSERT_NE( pub_singleton_glob_explicit, nullptr );
   QCoreApplication::processEvents();
@@ -105,7 +105,7 @@ TEST( Communication, publisher )
   EXPECT_EQ( pub_singleton_glob_explicit_storage.messages[0].position.y, 1.3 );
   delete pub_singleton_glob_explicit;
 
-  auto pub_singleton_glob = dynamic_cast<qml_ros2_plugin::Publisher *>(
+  auto pub_singleton_glob = dynamic_cast<qml6_ros2_plugin::Publisher *>(
       wrapper.createPublisher( "other_pose", "geometry_msgs/Pose", 10 ) );
   QCoreApplication::processEvents();
   EXPECT_EQ( pub_singleton_glob->topic().toStdString(), "/other_pose" );
@@ -129,7 +129,7 @@ TEST( Communication, subscriber )
   Ros2QmlSingletonWrapper wrapper;
   auto pub_pns = node->create_publisher<geometry_msgs::msg::Pose>( "~/test", 10 );
   ASSERT_EQ( pub_pns->get_topic_name(), std::string( "/communication/test" ) );
-  auto subscriber_pns = dynamic_cast<qml_ros2_plugin::Subscription *>(
+  auto subscriber_pns = dynamic_cast<qml6_ros2_plugin::Subscription *>(
       wrapper.createSubscription( "/communication/test", 1 ) );
   processEvents();
   EXPECT_TRUE( subscriber_pns->isRosInitialized() );
@@ -151,7 +151,7 @@ TEST( Communication, subscriber )
 
   auto pub_pns_glob = node->create_publisher<geometry_msgs::msg::Pose>( "/pose", 10 );
   ASSERT_EQ( pub_pns_glob->get_topic_name(), std::string( "/pose" ) );
-  qml_ros2_plugin::Subscription subscriber_pns_glob;
+  qml6_ros2_plugin::Subscription subscriber_pns_glob;
   //  subscriber_pns_glob.setNs( "~private_ns" );
   subscriber_pns_glob.setTopic( "/pose" );
   subscriber_pns_glob.setQueueSize( 5 );
@@ -173,8 +173,8 @@ TEST( Communication, subscriber )
 
   auto pub_ns = node->create_publisher<geometry_msgs::msg::Pose>( "/other_pose", rclcpp::QoS( 1 ) );
   ASSERT_EQ( pub_ns->get_topic_name(), std::string( "/other_pose" ) );
-  auto subscriber_ns =
-      dynamic_cast<qml_ros2_plugin::Subscription *>( wrapper.createSubscription( "/other_pose", 1 ) );
+  auto subscriber_ns = dynamic_cast<qml6_ros2_plugin::Subscription *>(
+      wrapper.createSubscription( "/other_pose", 1 ) );
   QCoreApplication::processEvents();
   EXPECT_TRUE( subscriber_ns->isRosInitialized() );
   EXPECT_EQ( subscriber_ns->queueSize(), 1U );
@@ -226,10 +226,10 @@ TEST( Communication, throttleRate )
   auto pub_pns = node->create_publisher<std_msgs::msg::Int32>( "~/test_throttle_rate",
                                                                rclcpp::QoS( 5 ).transient_local() );
   ASSERT_EQ( pub_pns->get_topic_name(), std::string( "/communication/test_throttle_rate" ) );
-  auto subscriber_pns = dynamic_cast<qml_ros2_plugin::Subscription *>( wrapper.createSubscription(
+  auto subscriber_pns = dynamic_cast<qml6_ros2_plugin::Subscription *>( wrapper.createSubscription(
       "/communication/test_throttle_rate", QoSWrapper().keep_last( 5 ) ) );
   std::unique_ptr<Receiver> receiver = std::make_unique<Receiver>();
-  QObject::connect( subscriber_pns, &qml_ros2_plugin::Subscription::newMessage, receiver.get(),
+  QObject::connect( subscriber_pns, &qml6_ros2_plugin::Subscription::newMessage, receiver.get(),
                     &Receiver::callback );
   processEvents();
   EXPECT_TRUE( subscriber_pns->isRosInitialized() );
@@ -476,12 +476,12 @@ class ActionClientCallback : public QObject
 {
   Q_OBJECT
 public:
-  Q_INVOKABLE void onGoalResponse( qml_ros2_plugin::GoalHandle *gh )
+  Q_INVOKABLE void onGoalResponse( qml6_ros2_plugin::GoalHandle *gh )
   {
     this->goal_handles.push_back( gh );
   }
 
-  Q_INVOKABLE void onFeedback( qml_ros2_plugin::GoalHandle *, int fb ) { this->feedback = fb; }
+  Q_INVOKABLE void onFeedback( qml6_ros2_plugin::GoalHandle *, int fb ) { this->feedback = fb; }
 
   Q_INVOKABLE void onResult( QVariantMap s ) { this->results[s["goalId"].toString()] = s; }
 
@@ -635,8 +635,8 @@ return {
 
 TEST( Communication, tfTransform )
 {
-  qml_ros2_plugin::TfTransformListenerWrapper wrapper;
-  qml_ros2_plugin::TfTransform transform;
+  qml6_ros2_plugin::TfTransformListenerWrapper wrapper;
+  qml6_ros2_plugin::TfTransform transform;
   geometry_msgs::msg::TransformStamped transform_stamped;
   transform_stamped.header.frame_id = "world";
   transform_stamped.header.stamp = node->now();

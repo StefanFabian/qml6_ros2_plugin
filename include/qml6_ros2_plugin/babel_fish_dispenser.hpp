@@ -6,7 +6,7 @@
 
 #include <ros_babel_fish/babel_fish.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 /*!
@@ -32,6 +32,6 @@ private:
 
   std::vector<ros_babel_fish::TypeSupportProvider::SharedPtr> type_support_providers_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_BABEL_FISH_DISPENSER_HPP

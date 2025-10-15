@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(qml_ros2_plugin VERSION 1.0.0)
+project(qml6_ros2_plugin VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 
 #set(CMAKE_BUILD_TYPE "Debug")
@@ -29,27 +29,27 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ###########
 
 set(SOURCES
-  include/qml_ros2_plugin/conversion/message_conversions.hpp
-  include/qml_ros2_plugin/conversion/qml_ros_conversion.hpp
-  include/qml_ros2_plugin/array.hpp
-  include/qml_ros2_plugin/action_client.hpp
-  include/qml_ros2_plugin/ament_index.hpp
-  include/qml_ros2_plugin/babel_fish_dispenser.hpp
-  include/qml_ros2_plugin/goal_handle.hpp
-  include/qml_ros2_plugin/goal_status.hpp
-  include/qml_ros2_plugin/io.hpp
-  include/qml_ros2_plugin/logger.hpp
-  include/qml_ros2_plugin/publisher.hpp
-  include/qml_ros2_plugin/qobject_ros2.hpp
-  include/qml_ros2_plugin/qos.hpp
-  include/qml_ros2_plugin/ros2.hpp
-  include/qml_ros2_plugin/ros2_init_options.hpp
-  include/qml_ros2_plugin/service_client.hpp
-  include/qml_ros2_plugin/subscription.hpp
-  include/qml_ros2_plugin/tf_transform.hpp
-  include/qml_ros2_plugin/tf_transform_listener.hpp
-  include/qml_ros2_plugin/topic_info.hpp
-  include/qml_ros2_plugin/time.hpp
+  include/qml6_ros2_plugin/conversion/message_conversions.hpp
+  include/qml6_ros2_plugin/conversion/qml_ros_conversion.hpp
+  include/qml6_ros2_plugin/array.hpp
+  include/qml6_ros2_plugin/action_client.hpp
+  include/qml6_ros2_plugin/ament_index.hpp
+  include/qml6_ros2_plugin/babel_fish_dispenser.hpp
+  include/qml6_ros2_plugin/goal_handle.hpp
+  include/qml6_ros2_plugin/goal_status.hpp
+  include/qml6_ros2_plugin/io.hpp
+  include/qml6_ros2_plugin/logger.hpp
+  include/qml6_ros2_plugin/publisher.hpp
+  include/qml6_ros2_plugin/qobject_ros2.hpp
+  include/qml6_ros2_plugin/qos.hpp
+  include/qml6_ros2_plugin/ros2.hpp
+  include/qml6_ros2_plugin/ros2_init_options.hpp
+  include/qml6_ros2_plugin/service_client.hpp
+  include/qml6_ros2_plugin/subscription.hpp
+  include/qml6_ros2_plugin/tf_transform.hpp
+  include/qml6_ros2_plugin/tf_transform_listener.hpp
+  include/qml6_ros2_plugin/topic_info.hpp
+  include/qml6_ros2_plugin/time.hpp
   src/array.cpp
   src/action_client.cpp
   src/ament_index.cpp
@@ -59,7 +59,7 @@ set(SOURCES
   src/logger.cpp
   src/message_conversions.cpp
   src/publisher.cpp
-  src/qml_ros2_plugin.cpp
+  src/qml6_ros2_plugin.cpp
   src/qobject_ros2.cpp
   src/qos.cpp
   src/ros2.cpp
@@ -114,7 +114,7 @@ if(BUILD_TESTING)
   ament_target_dependencies(test_io  ${TEST_DEPENDENCIES})
   target_link_libraries(test_io ${PROJECT_NAME})
 
-  install(DIRECTORY test/test_io DESTINATION share/qml_ros2_plugin/test/)
+  install(DIRECTORY test/test_io DESTINATION share/qml6_ros2_plugin/test/)
 endif()
 
 # to run: catkin build --this --no-deps -DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -v --catkin-make-args ${PROJECT_NAME}_coverage
@@ -124,7 +124,7 @@ if(BUILD_TESTING AND ENABLE_COVERAGE_TESTING)
   find_package(code_coverage REQUIRED)   # catkin package ros-*-code-coverage
   include(CodeCoverage)
   append_coverage_compiler_flags()
-  set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/build/*" "*/src/qml_ros2_plugin.cpp")
+  set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/build/*" "*/src/qml6_ros2_plugin.cpp")
   add_code_coverage(NAME ${PROJECT_NAME}_coverage)
 endif()
 

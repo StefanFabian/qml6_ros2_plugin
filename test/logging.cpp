@@ -1,8 +1,8 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include <qml_ros2_plugin/logger.hpp>
-#include <qml_ros2_plugin/ros2.hpp>
+#include <qml6_ros2_plugin/logger.hpp>
+#include <qml6_ros2_plugin/ros2.hpp>
 
 #include <rcl_interfaces/msg/log.hpp>
 
@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
 
-using namespace qml_ros2_plugin;
+using namespace qml6_ros2_plugin;
 
 rclcpp::Node::SharedPtr node;
 
@@ -59,7 +59,8 @@ TEST( Logging, log )
   EXPECT_FALSE( waitFor( [&log]() { return !log.empty(); } ) )
       << "Default level should not show debug messages.";
   {
-    qml_ros2_plugin::Logger *logger = dynamic_cast<qml_ros2_plugin::Logger *>( wrapper->getLogger() );
+    qml6_ros2_plugin::Logger *logger =
+        dynamic_cast<qml6_ros2_plugin::Logger *>( wrapper->getLogger() );
     ASSERT_NE( logger, nullptr );
     ASSERT_TRUE( logger->setLoggerLevel( ros2_logger_levels::Debug ) )
         << "Failed to set logging level.";

@@ -9,7 +9,7 @@
 
 #include <rclcpp/init_options.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class Ros2InitOptions : public QObject
@@ -36,6 +36,6 @@ private:
   rclcpp::InitOptions options_;
 };
 
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_ROS2_INIT_OPTIONS_HPP

@@ -7,7 +7,7 @@
 #include <QVariant>
 #include <ros_babel_fish/messages/array_message.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 /*!
@@ -119,8 +119,8 @@ private:
   // Copies of array share the data
   std::shared_ptr<Data> p_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::Array )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::Array )
 
 #endif // QML_ROS2_PLUGIN_ARRAY_HPP

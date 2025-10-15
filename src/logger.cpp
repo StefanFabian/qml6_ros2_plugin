@@ -1,12 +1,12 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/logger.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/logger.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
 
 #include <QJSEngine>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 Logger::Logger( const rclcpp::Logger &logger ) : logger_( logger ) { }
@@ -107,4 +107,4 @@ QJSValue Logger::createLogFunction( Ros2LoggerLevel level )
 }))js" );
   return func.call( { engine->newQObject( this ) } );
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

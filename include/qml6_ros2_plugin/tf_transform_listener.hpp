@@ -4,14 +4,14 @@
 #ifndef QML_ROS2_PLUGIN_TF_TRANSFORM_LISTENER_HPP
 #define QML_ROS2_PLUGIN_TF_TRANSFORM_LISTENER_HPP
 
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QDateTime>
 #include <memory>
 #include <tf2_ros/buffer.h>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class TfTransformListener final : public QObject
@@ -155,6 +155,6 @@ public:
                                            const QString &source_frame, const Time &source_time,
                                            const QString &fixed_frame, double timeout = 0 );
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_TF_TRANSFORM_LISTENER_HPP

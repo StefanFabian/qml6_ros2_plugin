@@ -4,15 +4,15 @@
 #ifndef QML_ROS2_PLUGIN_PUBLISHER_HPP
 #define QML_ROS2_PLUGIN_PUBLISHER_HPP
 
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
 #include <QMap>
 #include <QTimer>
 #include <QVariant>
 
 #include <ros_babel_fish/babel_fish.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class Publisher : public QObjectRos2
@@ -80,6 +80,6 @@ protected:
   QString topic_;
   bool is_advertised_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_PUBLISHER_HPP

@@ -1,2 +1,2 @@
 module Ros2
-plugin qml_ros2_plugin
+plugin qml6_ros2_plugin

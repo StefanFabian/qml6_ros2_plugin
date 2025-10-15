@@ -1,21 +1,21 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/action_client.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/goal_handle.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/action_client.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/goal_handle.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 
 #include <QJSEngine>
 #include <utility>
 
 using namespace ros_babel_fish;
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 ActionClient::ActionClient( const QString &name, const QString &action_type )
@@ -86,7 +86,7 @@ void ActionClient::invokeFeedbackCallback( QJSValue callback,
 }
 
 void ActionClient::invokeResultCallback( QJSValue callback, QString goal_id,
-                                         qml_ros2_plugin::action_goal_status::GoalStatus result_code,
+                                         qml6_ros2_plugin::action_goal_status::GoalStatus result_code,
                                          ros_babel_fish::CompoundMessage::ConstSharedPtr result )
 {
   QJSEngine *engine = qjsEngine( this );
@@ -149,8 +149,8 @@ QObject *ActionClient::sendGoalAsync( const QVariantMap &goal, QJSValue options 
             QMetaObject::invokeMethod(
                 this, "invokeResultCallback", Qt::AutoConnection, Q_ARG( QJSValue, result_cb ),
                 Q_ARG( QString, uuidToString( result.goal_id ) ),
-                Q_ARG( qml_ros2_plugin::action_goal_status::GoalStatus,
-                       static_cast<qml_ros2_plugin::action_goal_status::GoalStatus>( result.code ) ),
+                Q_ARG( qml6_ros2_plugin::action_goal_status::GoalStatus,
+                       static_cast<qml6_ros2_plugin::action_goal_status::GoalStatus>( result.code ) ),
                 Q_ARG( ros_babel_fish::CompoundMessage::ConstSharedPtr, result.result ) );
           };
     }
@@ -182,4 +182,4 @@ void ActionClient::cancelGoalsBefore( const QDateTime &time )
     return;
   client_->async_cancel_goals_before( qmlToRos2Time( time ) );
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

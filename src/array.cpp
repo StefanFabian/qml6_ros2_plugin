@@ -1,16 +1,16 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 #include <ros_babel_fish/method_invoke_helpers.hpp>
 
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 using namespace ros_babel_fish;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 struct Array::Data {
@@ -233,4 +233,4 @@ void Array::fillCache() const
   p_->all_in_cache = true;
   p_->modified.clear();
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

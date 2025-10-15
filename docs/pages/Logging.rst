@@ -37,7 +37,7 @@ and publish the following on ``/rosout`` (unless ``NoRos2out`` was specified in 
   level: 2
   name: "/qml_logging_demo"
   msg: "Button clicked."
-  file: "/home/stefan/qml_ros2_plugin/examples/logging.qml"
+  file: "/home/stefan/qml6_ros2_plugin/examples/logging.qml"
   function: "onClicked"
   line: 130
   topics: [/rosout]

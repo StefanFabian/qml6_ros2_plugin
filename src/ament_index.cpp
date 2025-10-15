@@ -1,13 +1,13 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/ament_index.hpp"
+#include "qml6_ros2_plugin/ament_index.hpp"
 
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <ament_index_cpp/get_packages_with_prefixes.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 QString AmentIndex::getPackageShareDirectory( const QString &package_name )
@@ -28,4 +28,4 @@ QStringList AmentIndex::getPackages()
   for ( const auto &s : packages ) result.append( QString::fromStdString( s.first ) );
   return result;
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

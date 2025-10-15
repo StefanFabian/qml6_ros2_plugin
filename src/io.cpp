@@ -1,10 +1,10 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/io.hpp"
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/conversion/qvariant_yaml_conversion.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/io.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/conversion/qvariant_yaml_conversion.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
 
 #include <QAbstractListModel>
 #include <QMetaProperty>
@@ -13,7 +13,7 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 bool IO::writeYaml( QString path, const QVariant &value )
@@ -58,4 +58,4 @@ QVariant IO::readYaml( QString path )
     return QVariant::fromValue( false );
   }
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

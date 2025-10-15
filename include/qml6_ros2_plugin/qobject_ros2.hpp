@@ -6,7 +6,7 @@
 
 #include <QObject>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 /*!
@@ -50,6 +50,6 @@ public slots:
 private:
   bool is_initialized_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_QOBJECT_ROS2_HPP

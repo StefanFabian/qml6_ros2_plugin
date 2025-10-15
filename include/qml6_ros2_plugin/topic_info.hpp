@@ -8,7 +8,7 @@
 #include <QMetaType>
 #include <QString>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class TopicInfo
@@ -34,8 +34,8 @@ private:
   QString name_;
   QStringList datatypes_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::TopicInfo )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::TopicInfo )
 
 #endif // QML_ROS2_PLUGIN_TOPIC_INFO_HPP

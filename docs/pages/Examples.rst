@@ -3,7 +3,7 @@ Examples
 ========
 
 You can find the described example QML files in the
-`qml_ros2_plugin repo examples directory <https://github.com/StefanFabian/qml_ros2_plugin/tree/master/examples>`_.
+`qml6_ros2_plugin repo examples directory <https://github.com/StefanFabian/qml6_ros2_plugin/tree/master/examples>`_.
 
 Subscription
 ==========
