@@ -49,8 +49,8 @@ API
 
 Publisher
 =========
-.. doxygenclass:: qml_ros2_plugin::Publisher
+.. doxygenclass:: qml6_ros2_plugin::Publisher
   :members:
 
-.. doxygenclass:: qml_ros2_plugin::QoSWrapper
+.. doxygenclass:: qml6_ros2_plugin::QoSWrapper
   :members:

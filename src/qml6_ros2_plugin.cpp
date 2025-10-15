@@ -1,24 +1,24 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/action_client.hpp"
-#include "qml_ros2_plugin/ament_index.hpp"
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/goal_handle.hpp"
-#include "qml_ros2_plugin/logger.hpp"
-#include "qml_ros2_plugin/publisher.hpp"
-#include "qml_ros2_plugin/qos.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
-#include "qml_ros2_plugin/service_client.hpp"
-#include "qml_ros2_plugin/subscription.hpp"
-#include "qml_ros2_plugin/tf_transform.hpp"
-#include "qml_ros2_plugin/tf_transform_listener.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/action_client.hpp"
+#include "qml6_ros2_plugin/ament_index.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/goal_handle.hpp"
+#include "qml6_ros2_plugin/logger.hpp"
+#include "qml6_ros2_plugin/publisher.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/service_client.hpp"
+#include "qml6_ros2_plugin/subscription.hpp"
+#include "qml6_ros2_plugin/tf_transform.hpp"
+#include "qml6_ros2_plugin/tf_transform_listener.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QQmlExtensionPlugin>
 #include <QtQml>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class QmlRos2Plugin : public QQmlExtensionPlugin
@@ -37,7 +37,7 @@ public:
     QMetaType::registerConverter<Array, QVariantList>( &Array::toVariantList );
     qmlRegisterUncreatableMetaObject( ros2_logger_levels::staticMetaObject, "Ros2", 1, 0,
                                       "Ros2LoggerLevel", "Error: Can not create enum object." );
-    qmlRegisterUncreatableType<qml_ros2_plugin::Ros2InitOptions>(
+    qmlRegisterUncreatableType<qml6_ros2_plugin::Ros2InitOptions>(
         "Ros2", 1, 0, "Ros2InitOptions",
         "Error: Can not create Ros2InitOptions manually. A Ros2InitOptions is obtained as a return "
         "value of Ros2.createInitOptions()." );
@@ -95,6 +95,6 @@ public:
                                       "Ros2ClockTypes", "Error: Can not create enum object." );
   }
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-#include "qml_ros2_plugin.moc"
+#include "qml6_ros2_plugin.moc"

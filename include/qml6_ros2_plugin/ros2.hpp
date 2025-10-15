@@ -4,12 +4,12 @@
 #ifndef QML_ROS2_PLUGIN_ROS2_HPP
 #define QML_ROS2_PLUGIN_ROS2_HPP
 
-#include "qml_ros2_plugin/io.hpp"
-#include "qml_ros2_plugin/logger.hpp"
-#include "qml_ros2_plugin/qos.hpp"
-#include "qml_ros2_plugin/ros2_init_options.hpp"
-#include "qml_ros2_plugin/time.hpp"
-#include "qml_ros2_plugin/topic_info.hpp"
+#include "qml6_ros2_plugin/io.hpp"
+#include "qml6_ros2_plugin/logger.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/ros2_init_options.hpp"
+#include "qml6_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/topic_info.hpp"
 
 #include <QJSValue>
 #include <QObject>
@@ -19,7 +19,7 @@
 #include <ros_babel_fish/babel_fish.hpp>
 
 //! @brief Project namespace.
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class Ros2Qml final : public QObject
@@ -184,7 +184,7 @@ class Ros2QmlSingletonWrapper : public QObject
 {
   Q_OBJECT
   Q_PROPERTY( QString hostname READ hostname CONSTANT )
-  Q_PROPERTY( qml_ros2_plugin::IO io READ io CONSTANT )
+  Q_PROPERTY( qml6_ros2_plugin::IO io READ io CONSTANT )
   Q_PROPERTY( QJSValue debug READ debug CONSTANT )
   Q_PROPERTY( QJSValue info READ info CONSTANT )
   Q_PROPERTY( QJSValue warn READ warn CONSTANT )
@@ -203,22 +203,22 @@ public:
 
   //! Creates a default QoS object with Stefan Fabian's recommended settings for UIs:
   //! best_effort and volatile with a history depth of 1.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper QoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper QoS();
 
   //! Creates a QoS wrapper with the settings for BestAvailable from rclcpp.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper BestAvailableQoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper BestAvailableQoS();
 
   //! Creates a QoS wrapper with the settings for Clock from rclcpp.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper ClockQoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper ClockQoS();
 
   //! Creates a QoS wrapper with the settings for SensorData from rclcpp.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper SensorDataQoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper SensorDataQoS();
 
   //! Creates a QoS wrapper with the settings for Services from rclcpp.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper ServicesQoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper ServicesQoS();
 
   //! Creates a QoS wrapper with the settings for SystemDefaults from rclcpp.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper SystemDefaultsQoS();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper SystemDefaultsQoS();
 
   //! @copydoc Ros2Qml::isRosInitialized
   Q_INVOKABLE bool isInitialized() const;
@@ -236,7 +236,7 @@ public:
   Q_INVOKABLE bool ok() const;
 
   //! @return The current time as given by the node's clock (if initialized, otherwise rclcpp::Time())
-  Q_INVOKABLE qml_ros2_plugin::Time now() const;
+  Q_INVOKABLE qml6_ros2_plugin::Time now() const;
 
   //! Returns the name of the node. Returns empty string before ROS node was initialized.
   Q_INVOKABLE QString getName();
@@ -248,7 +248,7 @@ public:
   Q_INVOKABLE QStringList queryTopics( const QString &datatype = QString() ) const;
 
   //! @copydoc Ros2Qml::queryTopicInfo
-  Q_INVOKABLE QList<qml_ros2_plugin::TopicInfo> queryTopicInfo() const;
+  Q_INVOKABLE QList<qml6_ros2_plugin::TopicInfo> queryTopicInfo() const;
 
   //! @copydoc Ros2Qml::queryTopicTypes
   Q_INVOKABLE QStringList queryTopicTypes( const QString &name ) const;
@@ -320,10 +320,10 @@ public:
    * @return A Publisher instance.
    */
   Q_INVOKABLE QObject *createPublisher( const QString &topic, const QString &type,
-                                        const qml_ros2_plugin::QoSWrapper &qos );
+                                        const qml6_ros2_plugin::QoSWrapper &qos );
 
   /*!
-   * @see createPublisher(const QString &, const QString &, const qml_ros2_plugin::QoSWrapper &)
+   * @see createPublisher(const QString &, const QString &, const qml6_ros2_plugin::QoSWrapper &)
    * @param queue_size Sets the keep_last history of the qos to the given value.
    */
   Q_INVOKABLE QObject *createPublisher( const QString &topic, const QString &type,
@@ -338,10 +338,10 @@ public:
    * @return A Subscriber instance.
    */
   Q_INVOKABLE QObject *createSubscription( const QString &topic,
-                                           const qml_ros2_plugin::QoSWrapper &qos );
+                                           const qml6_ros2_plugin::QoSWrapper &qos );
 
   /*!
-   * @see createSubscription(const QString &, const qml_ros2_plugin::QoSWrapper &)
+   * @see createSubscription(const QString &, const qml6_ros2_plugin::QoSWrapper &)
    * @param queue_size The keep_last history of the qos. Default: 1
    */
   Q_INVOKABLE QObject *createSubscription( const QString &topic, quint32 queue_size = 1 );
@@ -356,10 +356,10 @@ public:
    * @return A Subscriber instance.
    */
   Q_INVOKABLE QObject *createSubscription( const QString &topic, const QString &message_type,
-                                           const qml_ros2_plugin::QoSWrapper &qos );
+                                           const qml6_ros2_plugin::QoSWrapper &qos );
 
   /*!
-   * @see createSubscription(const QString &, const QString &, const qml_ros2_plugin::QoSWrapper &)
+   * @see createSubscription(const QString &, const QString &, const qml6_ros2_plugin::QoSWrapper &)
    * @param queue_size The keep_last history of the qos. Default: 1
    */
   Q_INVOKABLE QObject *createSubscription( const QString &topic, const QString &message_type,
@@ -378,7 +378,7 @@ public:
    * @param qos The QoS settings for the service client.
    */
   Q_INVOKABLE QObject *createServiceClient( const QString &name, const QString &type,
-                                            const qml_ros2_plugin::QoSWrapper &qos );
+                                            const qml6_ros2_plugin::QoSWrapper &qos );
 
   /*!
    * Creates an ActionClient for the given type and the given name.
@@ -401,6 +401,6 @@ private:
 
   QJSValue logger_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_ROS2_HPP

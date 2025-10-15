@@ -6,7 +6,7 @@
 
 #include <QJSValue>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class IO
@@ -28,8 +28,8 @@ public:
    */
   Q_INVOKABLE QVariant readYaml( QString path );
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::IO )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::IO )
 
 #endif // QML_ROS2_PLUGIN_IO_HPP

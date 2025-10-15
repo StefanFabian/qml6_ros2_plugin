@@ -116,5 +116,5 @@ message type.
 API
 ---
 
-.. doxygenclass:: qml_ros2_plugin::Subscription
+.. doxygenclass:: qml6_ros2_plugin::Subscription
    :members:

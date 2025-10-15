@@ -4,8 +4,8 @@
 #ifndef QML_ROS2_PLUGIN_SUBSCRIPTION_HPP
 #define QML_ROS2_PLUGIN_SUBSCRIPTION_HPP
 
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
 
 #include <QMap>
 #include <QTimer>
@@ -15,7 +15,7 @@
 
 #include <ros_babel_fish/babel_fish.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class Subscription : public QObjectRos2
@@ -27,7 +27,7 @@ class Subscription : public QObjectRos2
   Q_PROPERTY( quint32 queueSize READ queueSize WRITE setQueueSize NOTIFY queueSizeChanged )
 
   //! The QoS settings for this subscription. Use ``Ros2.QoS()`` to create QoS settings.
-  Q_PROPERTY( qml_ros2_plugin::QoSWrapper qos READ qos WRITE setQoS NOTIFY qosChanged )
+  Q_PROPERTY( qml6_ros2_plugin::QoSWrapper qos READ qos WRITE setQoS NOTIFY qosChanged )
 
   //! The last message that was received by this subscriber.
   Q_PROPERTY( QVariant message READ message NOTIFY messageChanged )
@@ -142,6 +142,6 @@ protected:
   bool running_ = true;
   bool is_subscribed_ = false;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_SUBSCRIPTION_HPP

@@ -9,7 +9,7 @@
 
 #include <rclcpp/qos.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 //! @brief Wrapper to enable setting QoS settings in QML.
@@ -22,23 +22,23 @@ public:
   explicit QoSWrapper( rclcpp::QoS qos );
 
   //! @brief Sets the reliability policy to reliable. Returns the QoSWrapper for chaining.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper reliable();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper reliable();
 
   //! @brief Sets the reliability policy to best effort. Returns the QoSWrapper for chaining.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper best_effort();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper best_effort();
 
   //! @brief Sets the durability policy to volatile. Returns the QoSWrapper for chaining.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper durability_volatile();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper durability_volatile();
 
   //! @brief Sets the durability policy to transient local. Returns the QoSWrapper for chaining.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper transient_local();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper transient_local();
 
   //! @brief Sets the history policy to keep all messages. Returns the QoSWrapper for chaining.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper keep_all();
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper keep_all();
 
   //! @brief Sets the history policy to keep last messages. Returns the QoSWrapper for chaining.
   //! @param depth The number of messages to keep.
-  Q_INVOKABLE qml_ros2_plugin::QoSWrapper keep_last( int depth );
+  Q_INVOKABLE qml6_ros2_plugin::QoSWrapper keep_last( int depth );
 
   //! @brief Returns the depth of the QoS policy. If history policy is set to keep_last, this is the
   //!        number of messages to keep.
@@ -52,8 +52,8 @@ private:
   rclcpp::QoS qos_;
 };
 
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::QoSWrapper )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::QoSWrapper )
 
 #endif // QML_ROS2_PLUGIN_QOS_HPP

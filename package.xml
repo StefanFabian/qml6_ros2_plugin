@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>qml_ros2_plugin</name>
+  <name>qml6_ros2_plugin</name>
   <version>1.25.2</version>
   <description>
     A QML plugin for ROS.
     Enables full communication with ROS from QML.
   </description>
 
-  <maintainer email="qml_ros2_plugin@stefanfabian.me">Stefan Fabian</maintainer>
+  <maintainer email="qml6_ros2_plugin@stefanfabian.me">Stefan Fabian</maintainer>
 
   <license>MIT</license>
 
@@ -29,8 +29,8 @@
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>example_interfaces</test_depend>
-  <test_depend>qml6-module-qtquick</test_depend>
   <test_depend>qml6-module-qtqml-workerscript</test_depend>
+  <test_depend>qml6-module-qtquick</test_depend>
   <test_depend>ros_babel_fish_test_msgs</test_depend>
   <test_depend>std_srvs</test_depend>
 

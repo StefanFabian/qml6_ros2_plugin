@@ -1,9 +1,9 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 BabelFishDispenser::BabelFishDispenser() = default;
@@ -22,4 +22,4 @@ ros_babel_fish::BabelFish BabelFishDispenser::createBabelFish()
   type_support_providers_ = babel_fish.type_support_providers();
   return babel_fish;
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

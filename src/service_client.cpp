@@ -1,19 +1,19 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/service_client.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/service_client.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/ros2.hpp"
 
 #include <QJSEngine>
 #include <thread>
 
 using namespace ros_babel_fish;
-using namespace qml_ros2_plugin::conversion;
+using namespace qml6_ros2_plugin::conversion;
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 ServiceClient::ServiceClient( QString name, QString type, const QoSWrapper &qos )
     : qos_( qos ), name_( std::move( name ) ), service_type_( std::move( type ) )
@@ -144,4 +144,4 @@ void ServiceClient::invokeCallback( QJSValue value, const QVariant &result )
   QJSEngine *engine = qjsEngine( this );
   value.call( { engine->toScriptValue( result ) } );
 }
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin

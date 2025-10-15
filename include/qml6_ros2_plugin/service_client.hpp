@@ -4,15 +4,15 @@
 #ifndef QML_ROS2_PLUGIN_SERVICE_CLIENT_HPP
 #define QML_ROS2_PLUGIN_SERVICE_CLIENT_HPP
 
-#include "qml_ros2_plugin/qobject_ros2.hpp"
-#include "qml_ros2_plugin/qos.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/qos.hpp"
 #include <QJSValue>
 #include <QTimer>
 #include <QVariant>
 
 #include <ros_babel_fish/babel_fish.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 class ServiceClient : public QObjectRos2
@@ -86,6 +86,6 @@ private:
   std::atomic<bool> stop_{ false };
   int connection_timeout_ = 10'000; // Default connection timeout in ms
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_SERVICE_CLIENT_HPP

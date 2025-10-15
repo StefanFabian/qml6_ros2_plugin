@@ -33,5 +33,5 @@ whether a service call is currently active.
 API
 ---
 
-.. doxygenclass:: qml_ros2_plugin::ServiceClient
+.. doxygenclass:: qml6_ros2_plugin::ServiceClient
   :members:

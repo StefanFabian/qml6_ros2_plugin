@@ -4,14 +4,14 @@
 #include "common.hpp"
 #include "message_comparison.hpp"
 
-#include <qml_ros2_plugin/conversion/message_conversions.hpp>
-#include <qml_ros2_plugin/ros2.hpp>
+#include <qml6_ros2_plugin/conversion/message_conversions.hpp>
+#include <qml6_ros2_plugin/ros2.hpp>
 
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-using namespace qml_ros2_plugin;
+using namespace qml6_ros2_plugin;
 
 TEST( IO, yaml )
 {
@@ -45,7 +45,7 @@ TEST( IO, yaml )
       std::shared_ptr<void>( &test_array, []( const void * ) { /* do nothing */ } ) );
   QVariant map = conversion::msgToMap( translated );
 
-  std::string path = ament_index_cpp::get_package_share_directory( "qml_ros2_plugin" ) +
+  std::string path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
                      "/test/test_io/array_message.yaml";
   ASSERT_TRUE( io.writeYaml( QString::fromStdString( path ), map ) );
 
@@ -86,7 +86,7 @@ QtObject {
 )",
                      QUrl() );
   auto obj = std::unique_ptr<QObject>( component.create() );
-  path = ament_index_cpp::get_package_share_directory( "qml_ros2_plugin" ) +
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
          "/test/test_io/qobject.yaml";
   ASSERT_TRUE( io.writeYaml( QString::fromStdString( path ), QVariant::fromValue( obj.get() ) ) );
 
@@ -134,8 +134,8 @@ QtObject {
   ASSERT_EQ( arr[1].typeId(), QMetaType::QString );
   ASSERT_EQ( arr[1].toString(), "second" );
 
-  path =
-      ament_index_cpp::get_package_share_directory( "qml_ros2_plugin" ) + "/test/test_io/test.yaml";
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
+         "/test/test_io/test.yaml";
   file = io.readYaml( QString::fromStdString( path ) );
   ASSERT_EQ( file.typeId(), QMetaType::QVariantMap );
   content = file.toMap();

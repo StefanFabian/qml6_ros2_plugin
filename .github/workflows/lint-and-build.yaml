@@ -46,7 +46,7 @@ jobs:
           sudo apt-get install -y ros-dev-tools
       - uses: actions/checkout@v4
         with:
-          path: src/qml_ros2_plugin
+          path: src/qml6_ros2_plugin
       - name: rosdep
         run: |
           rosdep update --rosdistro ${{ matrix.setup.rosdistro }} --include-eol-distros
@@ -58,5 +58,5 @@ jobs:
       - name: test
         run: |
           source /opt/ros/${{ matrix.setup.rosdistro }}/setup.bash
-          colcon test --packages-select qml_ros2_plugin
+          colcon test --packages-select qml6_ros2_plugin
           colcon test-result --verbose

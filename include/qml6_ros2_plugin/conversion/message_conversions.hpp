@@ -16,7 +16,7 @@ class BabelFish;
 class Message;
 } // namespace ros_babel_fish
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 /*!
@@ -67,6 +67,6 @@ bool fillMessage( ros_babel_fish::Message &msg, const QVariant &value );
 bool fillMessage( ros_babel_fish::BabelFish &fish, ros_babel_fish::Message &msg,
                   const QVariant &value );
 } // namespace conversion
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_MESSAGE_CONVERSIONS_HPP

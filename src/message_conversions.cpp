@@ -1,13 +1,13 @@
 // Copyright (c) 2021 Stefan Fabian. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "qml_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 
-#include "qml_ros2_plugin/array.hpp"
-#include "qml_ros2_plugin/babel_fish_dispenser.hpp"
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/helpers/logging.hpp"
-#include "qml_ros2_plugin/time.hpp"
+#include "qml6_ros2_plugin/array.hpp"
+#include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/helpers/logging.hpp"
+#include "qml6_ros2_plugin/time.hpp"
 
 #include <QAbstractListModel>
 #include <QDateTime>
@@ -23,9 +23,7 @@
 
 using namespace ros_babel_fish;
 
-namespace qml_ros2_plugin
-{
-namespace conversion
+namespace qml6_ros2_plugin::conversion
 {
 
 QVariantMap msgToMap( const std_msgs::msg::Header &msg )
@@ -76,8 +74,8 @@ QString uuidToString( const rclcpp_action::GoalUUID &uuid )
 {
   static constexpr char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
                                     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-  static_assert( std::is_same<std::remove_const<std::remove_reference<decltype( uuid )>::type>::type,
-                              std::array<uint8_t, 16>>::value,
+  static_assert( std::is_same_v<std::remove_const_t<std::remove_reference_t<decltype( uuid )>>,
+                                std::array<uint8_t, 16>>,
                  "The UUID definition was changed. Please open an issue!" );
   QString result_uuid;
   result_uuid.resize( 36 );
@@ -623,7 +621,7 @@ bool isCompatible<rclcpp::Time>( const QVariant &variant )
   return variant.typeId() == QMetaType::Double || variant.typeId() == QMetaType::UInt ||
          variant.typeId() == QMetaType::Int || variant.typeId() == QMetaType::ULongLong ||
          variant.typeId() == QMetaType::LongLong || variant.typeId() == QMetaType::QDateTime ||
-         variant.typeName() == std::string( "qml_ros2_plugin::Time" );
+         variant.typeName() == std::string( "qml6_ros2_plugin::Time" );
 }
 
 template<>
@@ -632,13 +630,13 @@ bool isCompatible<rclcpp::Duration>( const QVariant &variant )
   return variant.typeId() == QMetaType::Double || variant.typeId() == QMetaType::UInt ||
          variant.typeId() == QMetaType::Int || variant.typeId() == QMetaType::ULongLong ||
          variant.typeId() == QMetaType::LongLong ||
-         variant.typeName() == std::string( "qml_ros2_plugin::Duration" );
+         variant.typeName() == std::string( "qml6_ros2_plugin::Duration" );
 }
 
 template<typename T>
 T getValue( const QVariant &variant )
 {
-  switch ( (int)variant.typeId() ) {
+  switch ( variant.typeId() ) {
   case QMetaType::Bool:
     return variant.toBool();
   case QMetaType::SChar:
@@ -1137,5 +1135,4 @@ bool fillMessage( BabelFish &fish, Message &msg, const QVariant &value )
   }
   return false;
 }
-} // namespace conversion
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin::conversion

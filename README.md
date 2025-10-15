@@ -1,8 +1,8 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml_ros2_plugin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml_ros2_plugin)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml_ros2_plugin&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml_ros2_plugin)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml_ros2_plugin&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml_ros2_plugin)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml_ros2_plugin&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml_ros2_plugin)
-[![Documentation Status](https://readthedocs.org/projects/qml-ros2-plugin/badge/?version=latest)](https://qml-ros2-plugin.readthedocs.io/en/latest/?badge=latest)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml6_ros2_plugin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml6_ros2_plugin)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml6_ros2_plugin&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml6_ros2_plugin)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml6_ros2_plugin&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml6_ros2_plugin)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=StefanFabian_qml6_ros2_plugin&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=StefanFabian_qml6_ros2_plugin)
+[![Documentation Status](https://readthedocs.org/projects/qml6-ros2-plugin/badge/?version=latest)](https://qml6-ros2-plugin.readthedocs.io/en/latest/?badge=latest)
 
 ## Scientific Works
 If you are using this module in a scientific context, feel free to cite [this paper](https://ieeexplore.ieee.org/document/9568801):
@@ -17,15 +17,19 @@ If you are using this module in a scientific context, feel free to cite [this pa
 
 # QML ROS2 Plugin
 
-Connects QML user interfaces to the Robot Operating System 2 (ROS2). [For the ROS 1 version click here](https://github.com/StefanFabian/qml_ros_plugin).  
-Please be aware that this loses some of the semantic information that the type of a message would normally provide.
+Connects QML user interfaces to the Robot Operating System 2 (ROS2).
+Please be aware that this loses some of the semantic information that the message type would normally provide since
+you can subscribe to any message without specifying the type and the type is only checked if you do specify it.
+
+* [For the Qt5 version click here](https://github.com/StefanFabian/qml_ros2_plugin)
+* [For the ROS 1 version click here](https://github.com/StefanFabian/qml_ros_plugin).
 
 Currently, has support for the following:  
 Logging, Publisher, Subscription, ImageTransportSubscription, Service client, ActionClient, TfTransform, Ament index and querying topics  
 
 **License:** MIT
 
-https://github.com/StefanFabian/qml_ros2_plugin/assets/2090520/c45280cf-24fe-4ff1-8423-30035deda10d
+https://github.com/StefanFabian/qml6_ros2_plugin/assets/2090520/c45280cf-24fe-4ff1-8423-30035deda10d
 
 This demo interface uses Tf and a velocity publisher to control and display the turtle demo with less than 200 lines of code for the entire interface.
 It is available in the examples folder as `turtle_demo_control.qml`.
@@ -88,38 +92,9 @@ Item {
 
 ## Image Transport
 
-Can be used to stream camera images.
-The default transport used is "compressed".  
-The stream is exposed to QML as a `QObject` with a `QAbstractVideoSurface` based `videoSurface` property
-(see [QML VideoOutput docs](https://doc.qt.io/qt-5/qml-qtmultimedia-videooutput.html#source-prop)) and can be used
-directly as source for the `VideoOutput` control.
-
-Multiple ImageTransportSubscribers for the same topic share a subscription to ensure the image is converted
-to a QML compatible format only once. Additionally, a throttleRate property allows to throttle the camera rate by
-subscribing for one frame and shutting down again at the given rate (see documentation).
-
-Usage example:
-
-```qml
-import QtMultimedia 5.4
-import Ros2 1.0
-
-Item {
-  width: 600
-  height: 400
-
-  ImageTransportSubscription {
-    id: imageSubscriber
-    topic: "/front_rgb_cam"
-    throttleRate: 0.2 // 1 frame every 5 seconds
-  }
-
-  VideoOutput {
-    source: imageSubscriber
-  }
-}
-
-```
+Not supported yet due to significant changes in Qt6 multimedia.
+You should use other means to stream cameras for now and unless debugging always as ROS is incredibly inefficient for
+image transport.
 
 ## Tf Lookup
 

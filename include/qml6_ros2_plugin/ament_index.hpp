@@ -6,7 +6,7 @@
 
 #include <QtCore>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 
 /*!
@@ -28,6 +28,6 @@ public:
   //! @return A list of all packages.
   Q_INVOKABLE QStringList getPackages();
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 #endif // QML_ROS2_PLUGIN_AMENT_INDEX_HPP

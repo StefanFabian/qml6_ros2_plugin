@@ -4,14 +4,14 @@
 #ifndef QML_ROS2_PLUGIN_TIME_HPP
 #define QML_ROS2_PLUGIN_TIME_HPP
 
-#include "qml_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml_ros2_plugin/qobject_ros2.hpp"
+#include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
+#include "qml6_ros2_plugin/qobject_ros2.hpp"
 
 #include <QVariant>
 #include <rclcpp/time.hpp>
 #include <rclcpp/timer.hpp>
 
-namespace qml_ros2_plugin
+namespace qml6_ros2_plugin
 {
 namespace ros_clock_types
 {
@@ -111,11 +111,11 @@ public:
 private:
   rclcpp::Duration duration_;
 };
-} // namespace qml_ros2_plugin
+} // namespace qml6_ros2_plugin
 
 // Register Time types
-Q_DECLARE_METATYPE( qml_ros2_plugin::Time )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::Time )
 
-Q_DECLARE_METATYPE( qml_ros2_plugin::Duration )
+Q_DECLARE_METATYPE( qml6_ros2_plugin::Duration )
 
 #endif // QML_ROS2_PLUGIN_TIME_HPP
