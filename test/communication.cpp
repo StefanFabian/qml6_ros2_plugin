@@ -58,6 +58,11 @@ bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeo
   return false;
 }
 
+void waitFor( std::chrono::milliseconds timeout )
+{
+  waitFor( []() { return false; }, timeout );
+}
+
 TEST( Communication, publisher )
 {
   Ros2QmlSingletonWrapper wrapper;
@@ -138,12 +143,12 @@ TEST( Communication, subscriber )
   ASSERT_EQ( subscriber_pns->topic().toStdString(), "/communication/test" );
   //  EXPECT_EQ( subscriber_pns->ns(), QString( "/communication/private_ns" )) << subscriber_pns->ns().toStdString();
   EXPECT_EQ( subscriber_pns->queueSize(), 1U );
-  if ( !waitFor( [&]() { return pub_pns->get_subscription_count() > 0; } ) )
+  if ( !waitFor( [&pub_pns]() { return pub_pns->get_subscription_count() > 0; } ) )
     FAIL() << "Timout while waiting for subscriber num increasing.";
   geometry_msgs::msg::Pose pose;
   pose.position.x = 2.34;
   pub_pns->publish( pose );
-  if ( !waitFor( [&]() { return subscriber_pns->message().isValid(); } ) )
+  if ( !waitFor( [&subscriber_pns]() { return subscriber_pns->message().isValid(); } ) )
     FAIL() << "Did not receive message in time.";
   EXPECT_DOUBLE_EQ( pose.position.x,
                     subscriber_pns->message().toMap()["position"].toMap()["x"].toDouble() );
@@ -160,11 +165,11 @@ TEST( Communication, subscriber )
   EXPECT_EQ( subscriber_pns_glob.queueSize(), 5U );
   EXPECT_EQ( subscriber_pns_glob.topic(), QString( "/pose" ) )
       << subscriber_pns_glob.topic().toStdString();
-  if ( !waitFor( [&]() { return pub_pns_glob->get_subscription_count() > 0; } ) )
+  if ( !waitFor( [&pub_pns_glob]() { return pub_pns_glob->get_subscription_count() > 0; } ) )
     FAIL() << "Timout while waiting for subscriber num increasing.";
   pose.position.y = 3.44;
   pub_pns_glob->publish( pose );
-  if ( !waitFor( [&]() { return subscriber_pns_glob.message().isValid(); } ) )
+  if ( !waitFor( [&subscriber_pns_glob]() { return subscriber_pns_glob.message().isValid(); } ) )
     FAIL() << "Did not receive message in time.";
   EXPECT_DOUBLE_EQ( pose.position.x,
                     subscriber_pns_glob.message().toMap()["position"].toMap()["x"].toDouble() );
@@ -180,11 +185,11 @@ TEST( Communication, subscriber )
   EXPECT_EQ( subscriber_ns->queueSize(), 1U );
   EXPECT_EQ( subscriber_ns->topic(), QString( "/other_pose" ) )
       << subscriber_ns->topic().toStdString();
-  if ( !waitFor( [&]() { return pub_ns->get_subscription_count() > 0; } ) )
+  if ( !waitFor( [&pub_ns]() { return pub_ns->get_subscription_count() > 0; }, 3s ) )
     FAIL() << "Timout while waiting for subscriber num increasing.";
   pose.position.z = 5.16;
   pub_ns->publish( pose );
-  if ( !waitFor( [&]() { return subscriber_ns->message().isValid(); } ) )
+  if ( !waitFor( [&subscriber_ns]() { return subscriber_ns->message().isValid(); } ) )
     FAIL() << "Did not receive message in time.";
   EXPECT_DOUBLE_EQ( pose.position.x,
                     subscriber_ns->message().toMap()["position"].toMap()["x"].toDouble() );
@@ -197,7 +202,7 @@ TEST( Communication, subscriber )
   EXPECT_FALSE( subscriber_ns->enabled() );
   pose.position.z = 1.0;
   pub_ns->publish( pose );
-  if ( waitFor( [&]() {
+  if ( waitFor( [&subscriber_ns]() {
          return std::abs( subscriber_ns->message().toMap()["position"].toMap()["z"].toDouble() -
                           1.0 ) < 1E-4;
        } ) )
@@ -234,7 +239,8 @@ TEST( Communication, throttleRate )
   processEvents();
   EXPECT_TRUE( subscriber_pns->isRosInitialized() );
   EXPECT_TRUE( subscriber_pns->enabled() );
-  EXPECT_TRUE( waitFor( [&subscriber_pns]() { return subscriber_pns->getPublisherCount() == 1U; } ) );
+  EXPECT_TRUE(
+      waitFor( [&subscriber_pns]() { return subscriber_pns->getPublisherCount() == 1U; }, 3s ) );
   ASSERT_EQ( subscriber_pns->topic().toStdString(), "/communication/test_throttle_rate" );
   EXPECT_EQ( subscriber_pns->queueSize(), 5U );
   if ( !waitFor( [&]() { return pub_pns->get_subscription_count() > 0; } ) )
@@ -376,9 +382,9 @@ TEST( Communication, serviceCallAsync )
   ASSERT_TRUE( obj.hasProperty( "result" ) );
   QVariant result = obj.property( "result" ).toVariant();
   EXPECT_TRUE( service_called ) << "Service was not called!";
-  ASSERT_EQ( result.type(), QVariant::Map )
+  ASSERT_EQ( result.typeId(), QMetaType::QVariantMap )
       << "Result was not map. Did the request fail? "
-      << ( result.type() == QVariant::Bool && !result.toBool() ? "Yes" : "No" ) << std::endl
+      << ( result.typeId() == QMetaType::Bool && !result.toBool() ? "Yes" : "No" ) << std::endl
       << "Typename: " << result.typeName();
   EXPECT_EQ( result.toMap()["sum"].toInt(), 4 )
       << "Contains 'sum'? " << ( result.toMap().contains( "sum" ) ? "Yes" : "No" );
@@ -411,7 +417,7 @@ TEST( Communication, serviceCallAsync )
   ASSERT_TRUE( obj.hasProperty( "result" ) );
   result = obj.property( "result" ).toVariant();
   // In ROS2 each message needs at least one member, hence empty will add a filler byte member
-  ASSERT_EQ( result.type(), QVariant::Map )
+  ASSERT_EQ( result.typeId(), QMetaType::QVariantMap )
       << "Result was not QVariantMap. Typename: " << result.typeName();
 }
 
@@ -529,12 +535,12 @@ return {
   QVariantMap result_map = callback_watcher->results[handle->goalId()];
   ASSERT_TRUE( result_map.contains( "goalId" ) )
       << "Keys: " << result_map.keys().join( ", " ).toStdString();
-  EXPECT_EQ( result_map["goalId"].type(), QVariant::String );
+  EXPECT_EQ( result_map["goalId"].typeId(), QMetaType::QString );
   EXPECT_EQ( result_map["goalId"].toString(), handle->goalId() );
   ASSERT_TRUE( result_map.contains( "result" ) );
-  EXPECT_EQ( result_map["result"].type(), QVariant::Map );
+  EXPECT_EQ( result_map["result"].typeId(), QMetaType::QVariantMap );
   ASSERT_TRUE( result_map["result"].toMap().contains( "final_value" ) );
-  EXPECT_EQ( result_map["result"].toMap()["final_value"].type(), QVariant::Int );
+  EXPECT_EQ( result_map["result"].toMap()["final_value"].typeId(), QMetaType::Int );
   EXPECT_EQ( result_map["result"].toMap()["final_value"].toInt(), 800 );
   //  delete handle;
 
@@ -590,18 +596,15 @@ return {
   // Cancel all goals before and at time
   callback_watcher->goal_handles.clear();
   handle1 = dynamic_cast<GoalHandle *>( client.sendGoalAsync( { { "target", 1700 } }, options ) );
-  //  ASSERT_NE( handle1, nullptr );
-  processEvents();
-  std::this_thread::sleep_for( 10ms );
-  processEvents();
+  ASSERT_NE( handle1, nullptr );
+  ASSERT_TRUE( waitFor( [&handle1]() { return handle1->status() == action_goal_status::Accepted; } ) );
+  waitFor( 10ms );
   handle2 = dynamic_cast<GoalHandle *>( client.sendGoalAsync( { { "target", 1800 } }, options ) );
-  //  ASSERT_NE( handle2, nullptr );
-  processEvents();
-  std::this_thread::sleep_for( 40ms );
-  processEvents();
+  ASSERT_NE( handle2, nullptr );
+  ASSERT_TRUE( waitFor( [&handle2]() { return handle2->status() == action_goal_status::Accepted; } ) );
+  waitFor( 10ms );
   QDateTime now = rosToQmlTime( node->now() );
-  std::this_thread::sleep_for( 10ms );
-  processEvents();
+  waitFor( 50ms );
   handle3 = dynamic_cast<GoalHandle *>( client.sendGoalAsync( { { "target", 190 } }, options ) );
   ASSERT_NE( handle3, nullptr );
   EXPECT_NE( handle1->status(), action_goal_status::Succeeded );
@@ -620,12 +623,12 @@ return {
   } ) );
   result_map = callback_watcher->results[handle3->goalId()];
   ASSERT_TRUE( result_map.contains( "goalId" ) );
-  EXPECT_EQ( result_map["goalId"].type(), QVariant::String );
+  EXPECT_EQ( result_map["goalId"].typeId(), QMetaType::QString );
   EXPECT_EQ( result_map["goalId"].toString().toStdString(), handle3->goalId().toStdString() );
   ASSERT_TRUE( result_map.contains( "result" ) );
-  EXPECT_EQ( result_map["result"].type(), QVariant::Map );
+  EXPECT_EQ( result_map["result"].typeId(), QMetaType::QVariantMap );
   ASSERT_TRUE( result_map["result"].toMap().contains( "final_value" ) );
-  EXPECT_EQ( result_map["result"].toMap()["final_value"].type(), QVariant::Int );
+  EXPECT_EQ( result_map["result"].toMap()["final_value"].typeId(), QMetaType::Int );
   EXPECT_EQ( result_map["result"].toMap()["final_value"].toInt(), 380 );
 
   //  delete handle1;
@@ -701,14 +704,14 @@ TEST( Communication, tfTransform )
                     0.577 );
 
   QVariant can_transform = wrapper.canTransform( "base", "world" ).toBool();
-  ASSERT_EQ( can_transform.type(), QVariant::Bool ) << can_transform.toString().toStdString();
+  ASSERT_EQ( can_transform.typeId(), QMetaType::Bool ) << can_transform.toString().toStdString();
   EXPECT_TRUE( can_transform.toBool() );
   can_transform = wrapper.canTransform( "millionaire", "inheritance", QDateTime(), 500 );
-  EXPECT_TRUE( can_transform.type() != QVariant::Bool || !can_transform.toBool() )
+  EXPECT_TRUE( can_transform.typeId() != QMetaType::Bool || !can_transform.toBool() )
       << "Inheritance shouldn't be able to transform to millionaire!";
   can_transform = wrapper.canTransform( "base", last_transform_datetime, "world",
                                         last_transform_datetime, "world" );
-  ASSERT_EQ( can_transform.type(), QVariant::Bool ) << can_transform.toString().toStdString();
+  ASSERT_EQ( can_transform.typeId(), QMetaType::Bool ) << can_transform.toString().toStdString();
   EXPECT_TRUE( can_transform.toBool() );
 
   EXPECT_TRUE( mapAndMessageEqual( wrapper.lookUpTransform( "world", "base", QDateTime(), 500 ),
@@ -731,13 +734,13 @@ TEST( Communication, tfTransform )
   EXPECT_EQ( wrapper
                  .canTransform( "world", QDateTime::currentDateTime(), "base",
                                 QDateTime::currentDateTime(), "world" )
-                 .type(),
-             QVariant::String );
+                 .typeId(),
+             QMetaType::QString );
   EXPECT_EQ( wrapper
                  .canTransform( "world", QDateTime::currentDateTime(), "base",
                                 QDateTime::currentDateTime(), "world", 500 )
-                 .type(),
-             QVariant::String );
+                 .typeId(),
+             QMetaType::QString );
   EXPECT_EQ( wrapper
                  .lookUpTransform( "world", QDateTime::currentDateTime(), "base",
                                    QDateTime::currentDateTime(), "world" )["exception"]
