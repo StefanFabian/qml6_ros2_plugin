@@ -1,9 +1,9 @@
 name: Build & Test
 on:
   push:
-    branches: [ jazzy-qt6 ]
+    branches: [ jazzy ]
   pull_request:
-    branches: [ jazzy-qt6 ]
+    branches: [ jazzy ]
 defaults:
   run:
     shell: bash
