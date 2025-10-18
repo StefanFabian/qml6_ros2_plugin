@@ -25,9 +25,7 @@ you can subscribe to any message without specifying the type and the type is onl
 * [For the ROS 1 version click here](https://github.com/StefanFabian/qml_ros_plugin).
 
 Currently, has support for the following:  
-Logging, Publisher, Subscription, ImageTransportSubscription, Service client, ActionClient, TfTransform, Ament index and querying topics  
-
-**License:** MIT
+Logging, Publisher, Subscription, ImageTransportSubscription, Service client, ActionClient, TfTransform, Ament index and querying topics
 
 https://github.com/StefanFabian/qml6_ros2_plugin/assets/2090520/c45280cf-24fe-4ff1-8423-30035deda10d
 
@@ -203,8 +201,7 @@ Alternatively, you can follow the steps below to build it yourself.
 Install dependencies
 
 ```bash
-sudo apt install doxygen
-pip3 install sphinx sphinx_rtd_theme breathe
+sudo apt install doxygen python3-sphinx python3-sphinx-rtd-theme python3-breathe 
 ```
 
 #### Build documentation

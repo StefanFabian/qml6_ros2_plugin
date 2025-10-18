@@ -28,7 +28,7 @@ To run, run:
 
 .. code-block::
 
-  qmlscene publisher.qml
+  qmlscene -qt=qt6 publisher.qml
 
 URDF Tutorial UI
 ================
@@ -40,13 +40,13 @@ First, launch the example:
 
 .. code-block::
 
-  roslaunch urdf_sim_tutorial 13-diffdrive.launch
+  roslaunch -qt=qt6 urdf_sim_tutorial 13-diffdrive.launch
 
 Next, launch the example UI:
 
 .. code-block::
 
-  qmlscene urdf_tutorial_combined.qml
+  qmlscene -qt=qt6 urdf_tutorial_combined.qml
 
 It provides a top down view on the position of the robot and sliders to control
 the forward and angular movement.
@@ -63,4 +63,4 @@ To run, run:
 
 .. code-block::
 
-  qmlscene logging.qml
+  qmlscene -qt=qt6 logging.qml
