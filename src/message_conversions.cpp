@@ -3,10 +3,10 @@
 
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 
+#include "logging.hpp"
 #include "qml6_ros2_plugin/array.hpp"
 #include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
 #include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
-#include "qml6_ros2_plugin/helpers/logging.hpp"
 #include "qml6_ros2_plugin/time.hpp"
 
 #include <QAbstractListModel>

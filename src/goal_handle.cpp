@@ -3,9 +3,9 @@
 
 #include "qml6_ros2_plugin/goal_handle.hpp"
 
+#include "logging.hpp"
 #include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
-#include "qml6_ros2_plugin/helpers/logging.hpp"
 
 using namespace ros_babel_fish;
 using namespace qml6_ros2_plugin::conversion;
