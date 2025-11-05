@@ -126,4 +126,23 @@ void GoalHandle::updateStatus()
   }
 }
 
+bool GoalHandle::isActive() const
+{
+  checkFuture();
+  if ( goal_handle_ == nullptr )
+    return false;
+  switch ( static_cast<action_goal_status::GoalStatus>( goal_handle_->get_status() ) ) {
+  case action_goal_status::Accepted:
+  case action_goal_status::Executing:
+  case action_goal_status::Canceling:
+    return true;
+  case action_goal_status::Aborted:
+  case action_goal_status::Canceled:
+  case action_goal_status::Succeeded:
+  case action_goal_status::Unknown:
+    return false;
+  }
+  return false;
+}
+
 } // namespace qml6_ros2_plugin
