@@ -6,6 +6,7 @@
 #include "qml6_ros2_plugin/array.hpp"
 #include "qml6_ros2_plugin/goal_handle.hpp"
 #include "qml6_ros2_plugin/logger.hpp"
+#include "qml6_ros2_plugin/message_item_model.hpp"
 #include "qml6_ros2_plugin/publisher.hpp"
 #include "qml6_ros2_plugin/qos.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
@@ -60,6 +61,7 @@ public:
         "Ros2", 1, 0,
         "Publisher", "Error: Can not create Publisher manually in QML. Use one of the createPublisher functions." );
 
+    qmlRegisterType<MessageItemModel>( "Ros2", 1, 0, "MessageItemModel" );
     qmlRegisterType<Subscription>( "Ros2", 1, 0, "Subscription" );
     qmlRegisterSingletonType<TfTransformListenerWrapper>(
         "Ros2", 1, 0, "TfTransformListener",
