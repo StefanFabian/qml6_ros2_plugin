@@ -156,8 +156,8 @@ else()
   # Register plugin to be found by QML
   ament_environment_hooks(environment_setup.dsv.in)
   install(DIRECTORY include/ DESTINATION include)
-  install(TARGETS ${PROJECT_NAME} EXPORT export_${PROJECT_NAME} DESTINATION lib/Ros2)
-  install(FILES qmldir DESTINATION lib/Ros2)
+  install(TARGETS ${PROJECT_NAME} EXPORT export_${PROJECT_NAME} DESTINATION lib/qml6/Ros2)
+  install(FILES qmldir DESTINATION lib/qml6/Ros2)
   # The export is only necessary if part of a ROS2 workspace
   ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
   ament_export_include_directories(include)

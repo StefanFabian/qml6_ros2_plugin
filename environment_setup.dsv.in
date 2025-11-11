@@ -1,1 +1,1 @@
-prepend-non-duplicate;QML_IMPORT_PATH;lib
+prepend-non-duplicate;QML_IMPORT_PATH;lib/qml6
