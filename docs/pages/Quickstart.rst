@@ -10,6 +10,18 @@ Installation
 
 *Note:* Currently, only Linux is supported. Other platforms have not been tested.
 
+Binary
+------
+
+Make sure you have set up ROS 2 and their package repository.
+The plugin can be installed simply as:
+
+.. code-block:: bash
+
+   sudo apt install ros-rolling-qml6-ros2-plugin
+
+Replace ``rolling`` with the version of ROS 2 you are using.
+
 From Source
 -----------
 

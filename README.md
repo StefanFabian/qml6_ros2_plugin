@@ -186,7 +186,7 @@ rosdep install --from-paths . --ignore-packages-from-source
 
 ## Documentation
 
-You can find the documentation on [readthedocs.io](https://qml-ros2-plugin.readthedocs.io/en/latest/index.html).
+You can find the documentation on [readthedocs.io](https://qml6-ros2-plugin.readthedocs.io/en/latest/index.html).
 
 Alternatively, you can follow the steps below to build it yourself.
 
