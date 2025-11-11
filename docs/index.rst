@@ -1,5 +1,5 @@
 
-Welcome to QML ROS2 Plugin's documentation!
+Welcome to QML6 ROS2 Plugin's documentation!
 ==========================================
 
 .. toctree::
@@ -10,7 +10,7 @@ Welcome to QML ROS2 Plugin's documentation!
 
    pages/*
 
-For instructions on how to setup the QML ROS2 plugin and a quick getting
+For instructions on how to setup the Qt 6 QML ROS2 plugin and a quick getting
 started guide, check the :doc:`pages/Quickstart`.
 
 More in-depth examples can be found in the examples folder as described in

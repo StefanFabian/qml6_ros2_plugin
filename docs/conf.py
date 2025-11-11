@@ -29,7 +29,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
 
 # -- Project information -----------------------------------------------------
 
-project = 'QML ROS2 Plugin'
+project = 'QML6 ROS2 Plugin'
 copyright = f'2021-{datetime.now().year}, Stefan Fabian'
 author = 'Stefan Fabian'
 
