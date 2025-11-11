@@ -39,6 +39,7 @@ set(SOURCES
   include/qml6_ros2_plugin/goal_status.hpp
   include/qml6_ros2_plugin/io.hpp
   include/qml6_ros2_plugin/logger.hpp
+  include/qml6_ros2_plugin/message_item_model.hpp
   include/qml6_ros2_plugin/publisher.hpp
   include/qml6_ros2_plugin/qobject_ros2.hpp
   include/qml6_ros2_plugin/qos.hpp
@@ -58,6 +59,7 @@ set(SOURCES
   src/io.cpp
   src/logger.cpp
   src/message_conversions.cpp
+  src/message_item_model.cpp
   src/publisher.cpp
   src/qml6_ros2_plugin.cpp
   src/qobject_ros2.cpp
