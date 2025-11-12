@@ -185,7 +185,7 @@ TEST( MessageConversion, msgToMapRBF )
     test_message.point_arr.push_back( p );
   }
 
-  CompoundMessage wrapped(
+  auto wrapped = CompoundMessage::make_shared(
       *fish.get_message_type_support( "ros_babel_fish_test_msgs/TestMessage" ),
       std::shared_ptr<void>( &test_message, []( void * ) { /*empty deleter*/ } ) );
   QVariant map = msgToMap( wrapped );
@@ -262,8 +262,9 @@ TEST( MessageConversion, array )
   fillArray( test_array.subarrays_fixed, SEED++ );
   fillArray( test_array.subarrays, SEED++ );
 
-  CompoundMessage wrapped( *fish.get_message_type_support( "ros_babel_fish_test_msgs/TestArray" ),
-                           std::shared_ptr<void>( &test_array, []( void * ) { /*empty deleter*/ } ) );
+  auto wrapped = CompoundMessage::make_shared(
+      *fish.get_message_type_support( "ros_babel_fish_test_msgs/TestArray" ),
+      std::shared_ptr<void>( &test_array, []( void * ) { /*empty deleter*/ } ) );
   QVariant map = msgToMap( wrapped );
   ASSERT_TRUE( mapAndMessageEqual( map, test_array ) );
   CompoundMessage::SharedPtr msg =
@@ -346,9 +347,8 @@ TEST( MessageConversion, array )
   test_array.times.push_back( rclcpp::Time( 45000000 ) );
 
   // Unlike with array, this will be a QVariantList where a copy does not point to the same data.
-  ASSERT_EQ( map.toMap()["durations"].typeId(), QMetaType::QVariantList );
-  auto &duration_array = obtainValueAsReference<QVariantList>(
-      obtainValueAsReference<QVariantMap>( map )["durations"] );
+  ASSERT_EQ( map.toMap()["durations"].typeId(), qMetaTypeId<Array>() );
+  auto duration_array = map.toMap()["durations"].value<Array>();
   duration_array.replace( 0, { static_cast<uint8_t>( 21 ) } );
   test_array.durations[0] = rclcpp::Duration::from_seconds( 0.021 );
   duration_array.replace( 1, { static_cast<uint16_t>( 24 ) } );
@@ -386,9 +386,7 @@ TEST( MessageConversion, array )
 
   // Too long fixed array
   broken_map = msgToMap( msg );
-  obtainValueAsReference<QVariantList>(
-      obtainValueAsReference<QVariantMap>( broken_map )["durations"] )
-      .append( 3456.0 );
+  broken_map.toMap()["durations"].value<Array>().append( 3456.0 );
   EXPECT_FALSE( fillMessage( *broken_msg, broken_map ) );
 
   // Non string in string array but can be converted to string
