@@ -19,6 +19,12 @@ Both wrapper types can be converted to QML/JavaScript ``Date`` objects using the
 
 Please note that due to limitations in QML and JavaScript mathematical operations for Time and Duration are not possible.
 
+Time and Duration have a ``sec`` and a ``nanosec`` property representing the seconds and nanoseconds part of the time or
+duration similar to the ROS 2 message type.
+While they can be modified, there is no change notification emitted when doing so due to limitations of the Qt type used.
+Also note that ``nanosec`` is the time or duration part of the second and not a total nanosecond count.
+If you require the total nanosecond count, use the ``nanoseconds()`` method.
+
 API
 ---
 .. doxygenclass:: qml6_ros2_plugin::Time
