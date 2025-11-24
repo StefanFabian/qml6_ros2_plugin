@@ -803,21 +803,6 @@ bool fillMessage( BabelFish &fish, Message &msg, const QVariant &value )
     auto &compound = msg.as<CompoundMessage>();
     const QVariantMap &map = value.value<QVariantMap>();
 
-    // Special handling for time and duration to handle possible map conversion of our time and
-    // duration wrappers.
-    if ( compound.datatype() == "builtin_interfaces::msg::Time" ) {
-      if ( map.contains( "nanoseconds" ) ) {
-        compound = rclcpp::Time( static_cast<int64_t>( map["nanoseconds"].toULongLong() ) );
-        return true;
-      }
-    }
-    if ( compound.datatype() == "builtin_interfaces::msg::Duration" ) {
-      if ( map.contains( "nanoseconds" ) ) {
-        compound = rclcpp::Duration( std::chrono::nanoseconds( map["nanoseconds"].toLongLong() ) );
-        return true;
-      }
-    }
-
     bool no_error = true;
     for ( const auto &key : map.keys() ) {
       std::string skey = key.toStdString();
@@ -953,13 +938,18 @@ bool fillMessage( BabelFish &fish, Message &msg, const QVariant &value )
         return true;
       }
       if ( value.canConvert<QDateTime>() ) {
-        msg = rclcpp::Time( value.toDateTime().toMSecsSinceEpoch() * 1'000'000 );
+        msg = rclcpp::Time( qmlToRos2Time( value.toDateTime() ) );
         return true;
       }
       bool ok = false;
-      auto nanoseconds = static_cast<int64_t>( value.toDouble( &ok ) * 1E9 );
-      msg = rclcpp::Time( nanoseconds );
-      return ok;
+      auto milliseconds = value.toDouble( &ok );
+      if ( !ok ) {
+        QML_ROS2_PLUGIN_ERROR( "Unsupported QVariant type for time message: %s (%u)",
+                               value.typeName(), value.typeId() );
+        return false;
+      }
+      msg = rclcpp::Time( static_cast<int64_t>( milliseconds * 1E6 ) );
+      return true;
     }
     if ( msg.isDuration() ) {
       if ( value.canConvert<Duration>() ) {
@@ -967,9 +957,15 @@ bool fillMessage( BabelFish &fish, Message &msg, const QVariant &value )
         return true;
       }
       bool ok = false;
-      auto nanoseconds = static_cast<long>( value.toDouble( &ok ) * 1E9 );
-      msg = rclcpp::Duration( std::chrono::nanoseconds( nanoseconds ) );
-      return ok;
+      auto milliseconds = value.toDouble( &ok );
+      if ( !ok ) {
+        QML_ROS2_PLUGIN_ERROR( "Unsupported QVariant type for duration message: %s (%u)",
+                               value.typeName(), value.typeId() );
+        return false;
+      }
+      msg =
+          rclcpp::Duration( std::chrono::nanoseconds( static_cast<int64_t>( milliseconds * 1E6 ) ) );
+      return true;
     }
     QML_ROS2_PLUGIN_WARN( "Invalid type for compound message: %s (%u)", value.typeName(),
                           value.typeId() );
