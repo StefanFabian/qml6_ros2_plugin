@@ -5,6 +5,7 @@
 #include "qml6_ros2_plugin/ament_index.hpp"
 #include "qml6_ros2_plugin/array.hpp"
 #include "qml6_ros2_plugin/goal_handle.hpp"
+#include "qml6_ros2_plugin/image_transport_subscription.hpp"
 #include "qml6_ros2_plugin/logger.hpp"
 #include "qml6_ros2_plugin/message_item_model.hpp"
 #include "qml6_ros2_plugin/publisher.hpp"
@@ -71,6 +72,9 @@ public:
           return new TfTransformListenerWrapper;
         } );
     qmlRegisterType<TfTransform>( "Ros2", 1, 0, "TfTransform" );
+
+    // Image transport
+    qmlRegisterType<ImageTransportSubscription>( "Ros2", 1, 0, "ImageTransportSubscription" );
 
     // Action Client
     qmlRegisterUncreatableMetaObject( action_goal_status::staticMetaObject, "Ros2", 1, 0,
