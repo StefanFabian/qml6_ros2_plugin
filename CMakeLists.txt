@@ -37,6 +37,8 @@ set(SOURCES
   include/qml6_ros2_plugin/babel_fish_dispenser.hpp
   include/qml6_ros2_plugin/goal_handle.hpp
   include/qml6_ros2_plugin/goal_status.hpp
+  include/qml6_ros2_plugin/image_transport_manager.hpp
+  include/qml6_ros2_plugin/image_transport_subscription.hpp
   include/qml6_ros2_plugin/io.hpp
   include/qml6_ros2_plugin/logger.hpp
   include/qml6_ros2_plugin/message_item_model.hpp
@@ -56,6 +58,8 @@ set(SOURCES
   src/ament_index.cpp
   src/babel_fish_dispenser.cpp
   src/goal_handle.cpp
+  src/image_transport_manager.cpp
+  src/image_transport_subscription.cpp
   src/io.cpp
   src/logger.cpp
   src/message_conversions.cpp
