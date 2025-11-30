@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.25.110 (2025-11-30)
+---------------------
 * Fixed ImageTransportSubscription ignoring enabled when topic is changed.
 * Added ImageTransport.
 * Fixed documentation.
