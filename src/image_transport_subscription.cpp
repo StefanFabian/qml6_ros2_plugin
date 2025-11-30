@@ -51,11 +51,9 @@ void ImageTransportSubscription::onRos2Shutdown() { shutdownSubscriber(); }
 void ImageTransportSubscription::initSubscriber()
 {
   // This makes sure we lazy subscribe and only subscribe if there is a surface to write to
-  if ( sink_ == nullptr )
+  if ( sink_ == nullptr || !enabled_ || topic_.isEmpty() )
     return;
   if ( !Ros2Qml::getInstance().isInitialized() )
-    return;
-  if ( topic_.isEmpty() )
     return;
   bool was_subscribed = subscribed_;
   if ( subscribed_ ) {
