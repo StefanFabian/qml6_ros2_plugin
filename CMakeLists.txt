@@ -82,8 +82,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE RCLCPP_MAJOR_VERSION=${rclcpp_VERSION_MAJOR})
-target_link_libraries(${PROJECT_NAME} Qt6::Core Qt6::Multimedia Qt6::Qml Qt6::Quick ${YAML_CPP_LIBRARIES})
-ament_target_dependencies(${PROJECT_NAME} ament_index_cpp rclcpp image_transport ros_babel_fish tf2_ros)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  Qt6::Core Qt6::Multimedia Qt6::Qml Qt6::Quick
+  ${YAML_CPP_LIBRARIES}
+  ament_index_cpp::ament_index_cpp
+  rclcpp::rclcpp
+  image_transport::image_transport
+  ros_babel_fish::ros_babel_fish
+  tf2_ros::tf2_ros
+)
 
 #############
 ## Testing ##
@@ -99,26 +106,22 @@ if(BUILD_TESTING)
   find_package(std_srvs REQUIRED)
   find_package(Qt6Test REQUIRED)
 
-  set(TEST_DEPENDENCIES example_interfaces ros_babel_fish_test_msgs std_srvs)
+  set(TEST_DEPENDENCIES ${example_interfaces_TARGETS} ${ros_babel_fish_test_msgs_TARGETS} ${std_srvs_TARGETS})
 
   ament_add_gtest(test_communication test/communication.cpp)
-  ament_target_dependencies(test_communication ${TEST_DEPENDENCIES})
-  target_link_libraries(test_communication ${PROJECT_NAME} Qt6::Test)
+  target_link_libraries(test_communication ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
 
   ament_add_gtest(test_message_conversions test/message_conversions.cpp)
-  ament_target_dependencies(test_message_conversions  ${TEST_DEPENDENCIES})
-  target_link_libraries(test_message_conversions ${PROJECT_NAME})
+  target_link_libraries(test_message_conversions ${PROJECT_NAME} ${TEST_DEPENDENCIES})
 
   ament_add_gtest(test_ros_life_cycle test/ros_life_cycle.cpp)
-  ament_target_dependencies(test_ros_life_cycle  ${TEST_DEPENDENCIES})
-  target_link_libraries(test_ros_life_cycle ${PROJECT_NAME})
+  target_link_libraries(test_ros_life_cycle ${PROJECT_NAME} ${TEST_DEPENDENCIES})
 
   ament_add_gtest(test_logging test/logging.cpp)
   target_link_libraries(test_logging ${PROJECT_NAME})
   #
   ament_add_gtest(test_io test/io.cpp)
-  ament_target_dependencies(test_io  ${TEST_DEPENDENCIES})
-  target_link_libraries(test_io ${PROJECT_NAME})
+  target_link_libraries(test_io ${PROJECT_NAME} ${TEST_DEPENDENCIES})
 
   install(DIRECTORY test/test_io DESTINATION share/qml6_ros2_plugin/test/)
 endif()

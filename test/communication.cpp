@@ -25,8 +25,8 @@
 #include <QSignalSpy>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.hpp>
+#include <tf2_ros/transform_broadcaster.hpp>
 
 using namespace qml6_ros2_plugin;
 using namespace std::chrono_literals;
@@ -37,13 +37,13 @@ struct MessageStorage {
 
   void callback( T msg ) { messages.push_back( msg ); }
 };
-
+rclcpp::executors::SingleThreadedExecutor::UniquePtr executor;
 rclcpp::Node::SharedPtr node;
 
 void processEvents()
 {
   QCoreApplication::processEvents();
-  rclcpp::spin_some( node );
+  executor->spin_some( 1ms );
 }
 
 bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeout = 1s )
@@ -53,7 +53,6 @@ bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeo
     processEvents();
     if ( pred() )
       return true;
-    std::this_thread::sleep_for( 1ms );
   }
   return false;
 }
@@ -809,7 +808,9 @@ int main( int argc, char **argv )
   rclcpp::init( argc, argv );
   node = rclcpp::Node::make_shared( "communication",
                                     rclcpp::NodeOptions().use_intra_process_comms( false ) );
-  tf2_ros::StaticTransformBroadcaster static_tf_broadcaster( node );
+  executor = rclcpp::executors::SingleThreadedExecutor::make_unique();
+  executor->add_node( node );
+  tf2_ros::StaticTransformBroadcaster static_tf_broadcaster( *node );
   geometry_msgs::msg::TransformStamped static_transform;
   static_transform.header.frame_id = "billionaires";
   static_transform.child_frame_id = "politics";
@@ -817,6 +818,7 @@ int main( int argc, char **argv )
   Ros2QmlSingletonWrapper wrapper;
   wrapper.init( "communication_qml" );
   int result = RUN_ALL_TESTS();
+  executor.reset();
   node.reset();
   wrapper.shutdown();
   return result;
