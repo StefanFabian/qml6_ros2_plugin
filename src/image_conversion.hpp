@@ -214,16 +214,14 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
     }
     break;
   case QVideoFrameFormat::Format_YUYV:
-    if ( image->encoding == sensor_msgs::image_encodings::YUV422_YUY2 ||
-         image->encoding == sensor_msgs::image_encodings::YUYV ) {
+    if ( image->encoding == sensor_msgs::image_encodings::YUV422_YUY2 ) {
       std::memcpy( data, image->data.data(), image->data.size() );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_UYVY:
-    if ( image->encoding == sensor_msgs::image_encodings::YUV422 ||
-         image->encoding == sensor_msgs::image_encodings::UYVY ) {
+    if ( image->encoding == sensor_msgs::image_encodings::YUV422 ) {
       std::memcpy( data, image->data.data(), image->data.size() );
     } else {
       success = false;
