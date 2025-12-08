@@ -18,7 +18,7 @@ namespace qml6_ros2_plugin
 
 struct TfTransformListener::State {
   explicit State( rclcpp::Node::SharedPtr node )
-      : buffer( node->get_clock() ), listener( buffer, *node, false )
+      : buffer( node->get_clock() ), listener( buffer, node.get(), false )
   {
     buffer.setUsingDedicatedThread( true );
   }
