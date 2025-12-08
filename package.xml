@@ -23,6 +23,7 @@
   <depend>ros_babel_fish</depend>
   <depend>tf2_ros</depend>
   <depend>yaml-cpp</depend>
+  <build_depend>opengl</build_depend>
   <build_depend>qt6-base-dev</build_depend>
   <build_depend>qt6-declarative-dev</build_depend>
   <build_depend>qt6-multimedia-dev</build_depend>
