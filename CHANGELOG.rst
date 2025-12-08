@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.25.121 (2025-12-08)
+---------------------
 * Backport for kilted.
 * Contributors: Stefan Fabian
 
