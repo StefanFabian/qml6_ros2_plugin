@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.25.121 (2025-12-12)
+---------------------
 * Added encoding information to ImageTransportSubscription and fixed conversion from float to Y16.
   In accordance with depth image standards in ROS 16UC1 is interpreted as mm whereas float is in m. The conversion now respects that.
 * Contributors: Stefan Fabian
