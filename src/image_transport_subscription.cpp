@@ -6,6 +6,8 @@
 #include "qml6_ros2_plugin/image_transport_manager.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
 
+#include <sensor_msgs/image_encodings.hpp>
+
 namespace qml6_ros2_plugin
 {
 
@@ -66,10 +68,20 @@ void ImageTransportSubscription::initSubscriber()
   image_transport::TransportHints transport_hints( node.get(), default_transport_.toStdString() );
   subscription_ = ImageTransportManager::getInstance().subscribe(
       node, topic_, queue_size_, transport_hints,
-      [this]( const QVideoFrame &frame ) { presentFrame( frame ); } );
+      [this]( const QVideoFrame &frame, const ImageInformation &info ) {
+        if ( encoding_ != info.encoding ) {
+          encoding_ = info.encoding;
+          emit encodingChanged();
+        }
+        presentFrame( frame );
+      } );
   subscribed_ = subscription_ != nullptr;
   if ( !was_subscribed )
     emit subscribedChanged();
+  emit framerateChanged();
+  emit networkLatencyChanged();
+  emit processingLatencyChanged();
+  emit latencyChanged();
 }
 
 void ImageTransportSubscription::shutdownSubscriber()
@@ -78,6 +90,13 @@ void ImageTransportSubscription::shutdownSubscriber()
     return;
   subscription_.reset();
   subscribed_ = false;
+  last_framerate_ = 0;
+  last_network_latency_ = -1;
+  last_processing_latency_ = -1;
+  emit framerateChanged();
+  emit networkLatencyChanged();
+  emit processingLatencyChanged();
+  emit latencyChanged();
   emit subscribedChanged();
 }
 
@@ -195,5 +214,17 @@ int ImageTransportSubscription::networkLatency() const
 int ImageTransportSubscription::processingLatency() const
 {
   return subscription_ == nullptr ? -1 : subscription_->processingLatency();
+}
+
+QString ImageTransportSubscription::encoding() const { return QString::fromStdString( encoding_ ); }
+
+bool ImageTransportSubscription::hasAlpha() const
+{
+  return encoding_.empty() ? false : sensor_msgs::image_encodings::hasAlpha( encoding_ );
+}
+
+bool ImageTransportSubscription::isColor() const
+{
+  return encoding_.empty() ? true : sensor_msgs::image_encodings::isColor( encoding_ );
 }
 } // namespace qml6_ros2_plugin

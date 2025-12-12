@@ -12,6 +12,11 @@ namespace qml6_ros2_plugin
 {
 class ImageTransportSubscriptionHandle;
 
+struct ImageInformation {
+  rclcpp::Time timestamp;
+  std::string encoding;
+};
+
 /*!
  * Encapsulates the image transport communication to share the subscription resources, avoiding multiple conversions of
  *  the same image and subscription overhead if multiple cameras are set to throttle.
@@ -25,6 +30,7 @@ class ImageTransportManager
   class Subscription;
 
 public:
+  using ImageCallback = std::function<void( const QVideoFrame &, const ImageInformation & )>;
   static ImageTransportManager &getInstance();
 
   /*!
@@ -37,8 +43,7 @@ public:
    */
   std::shared_ptr<ImageTransportSubscriptionHandle>
   subscribe( const rclcpp::Node::SharedPtr &node, const QString &qtopic, quint32 queue_size,
-             const image_transport::TransportHints &transport_hints,
-             const std::function<void( const QVideoFrame & )> &callback );
+             const image_transport::TransportHints &transport_hints, const ImageCallback &callback );
 
 private:
   std::shared_ptr<SubscriptionManager> subscription_manager_;
@@ -68,7 +73,7 @@ public:
 
 private:
   std::shared_ptr<ImageTransportManager::Subscription> subscription;
-  std::function<void( const QVideoFrame & )> callback;
+  ImageTransportManager::ImageCallback callback;
   double framerate_ = 0;
   int network_latency = -1;
   int processing_latency = -1;
