@@ -9,6 +9,16 @@
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
+// Define restrict macro for different compilers to mark pointer arguments as non-aliasing
+// and enable further optimization.
+#if defined( __GNUC__ ) || defined( __clang__ )
+  #define RESTRICT __restrict__
+#elif defined( _MSC_VER )
+  #define RESTRICT __restrict
+#else
+  #define RESTRICT
+#endif
+
 namespace qml6_ros2_plugin
 {
 inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::string &encoding )
@@ -53,21 +63,21 @@ inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::strin
 }
 
 template<int IDX_1, int IDX_2, int IDX_3, typename CHANNEL_TYPE>
-void convertTo3Channel( const sensor_msgs::msg::Image::ConstSharedPtr &image, uchar *data,
+void convertTo3Channel( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
                         int bytes_per_line )
 {
-  const uchar *src_data = image->data.data();
-  int src_step = image->step;
-  int width = image->width;
-  int height = image->height;
+  const uchar *RESTRICT src_data = image.data.data();
+  const auto width = static_cast<int>( image.width );
+  const auto height = static_cast<int>( image.height );
   constexpr int divider = sizeof( CHANNEL_TYPE ) == 2 ? 256 : 1;
 
   for ( int y = 0; y < height; ++y ) {
-    const auto *src_row = reinterpret_cast<const CHANNEL_TYPE *>( src_data + y * src_step );
-    uchar *dst_row = data + y * bytes_per_line;
+    const auto *RESTRICT src_row =
+        reinterpret_cast<const CHANNEL_TYPE *>( src_data + y * image.step );
+    uchar *RESTRICT dst_row = data + y * bytes_per_line;
     for ( int x = 0; x < width; ++x ) {
       const CHANNEL_TYPE *src_pixel = src_row + x * 3;
-      uchar *dst_pixel = dst_row + x * 4;
+      uchar *RESTRICT dst_pixel = dst_row + x * 4;
       dst_pixel[IDX_1] = src_pixel[0] / divider;
       dst_pixel[IDX_2] = src_pixel[1] / divider;
       dst_pixel[IDX_3] = src_pixel[2] / divider;
@@ -77,18 +87,18 @@ void convertTo3Channel( const sensor_msgs::msg::Image::ConstSharedPtr &image, uc
 }
 
 template<int IDX_1, int IDX_2, int IDX_3, int IDX_4, typename CHANNEL_TYPE>
-void convertTo4Channel( const sensor_msgs::msg::Image::ConstSharedPtr &image, uchar *data,
+void convertTo4Channel( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
                         int bytes_per_line )
 {
-  const uchar *src_data = image->data.data();
-  int src_step = image->step;
-  int width = image->width;
-  int height = image->height;
+  const uchar *RESTRICT src_data = image.data.data();
+  const auto width = static_cast<int>( image.width );
+  const auto height = static_cast<int>( image.height );
   constexpr int divider = sizeof( CHANNEL_TYPE ) == 2 ? 256 : 1;
 
   for ( int y = 0; y < height; ++y ) {
-    const auto *src_row = reinterpret_cast<const CHANNEL_TYPE *>( src_data + y * src_step );
-    uchar *dst_row = data + y * bytes_per_line;
+    const auto *RESTRICT src_row =
+        reinterpret_cast<const CHANNEL_TYPE *>( src_data + y * image.step );
+    uchar *RESTRICT dst_row = data + y * bytes_per_line;
     for ( int x = 0; x < width; ++x ) {
       const CHANNEL_TYPE *src_pixel = src_row + x * 4;
       uchar *dst_pixel = dst_row + x * 4;
@@ -101,47 +111,51 @@ void convertTo4Channel( const sensor_msgs::msg::Image::ConstSharedPtr &image, uc
 }
 
 template<typename T>
-void convertToY16( const sensor_msgs::msg::Image::ConstSharedPtr &image, uchar *data,
+T clampValue( const T value, const T min, const T max )
+{
+  if ( value < min )
+    return min;
+  if ( value > max )
+    return max;
+  return value;
+}
+
+template<typename T>
+void convertToY16( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
                    int bytes_per_line )
 {
-  const T *src_data = reinterpret_cast<const T *>( image->data.data() );
-  int src_step = image->step / sizeof( T );
-  int width = image->width;
-  int height = image->height;
+  const uint8_t *RESTRICT src_data = image.data.data();
+  const auto width = static_cast<int>( image.width );
+  const auto height = static_cast<int>( image.height );
 
   for ( int y = 0; y < height; ++y ) {
-    const T *src_row = src_data + y * src_step;
-    uchar *dst_row = data + y * bytes_per_line;
+    const auto *RESTRICT src_row = reinterpret_cast<const T *>( src_data + y * image.step );
+    auto *RESTRICT dst_row = reinterpret_cast<uint16_t *>( data + y * bytes_per_line );
     for ( int x = 0; x < width; ++x ) {
-      T value = src_row[x];
+      const T value = src_row[x];
       // Scale the value to 16 bits
-      uint16_t scaled_value = static_cast<uint16_t>( std::min(
-          std::max( static_cast<int>( value * 65535.0 / std::numeric_limits<T>::max() ), 0 ),
-          65535 ) );
-      dst_row[x * 2] = static_cast<uchar>( scaled_value & 0xFF );
-      dst_row[x * 2 + 1] = static_cast<uchar>( ( scaled_value >> 8 ) & 0xFF );
+      uint16_t scaled_value =
+          std::isnan( value ) ? 0 : clampValue<int>( static_cast<int>( value * 1000 ), 1, 65535 );
+      dst_row[x] = scaled_value;
     }
   }
 }
 
 template<int BYTES_PER_PIXEL>
-void copyImageData( const sensor_msgs::msg::Image::ConstSharedPtr &image, uchar *data,
+void copyImageData( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
                     int bytes_per_line )
 {
-  const uchar *src_data = image->data.data();
-  int src_step = image->step;
-  int width = image->width;
-  int height = image->height;
+  const uchar *RESTRICT src_data = image.data.data();
 
-  if ( bytes_per_line == src_step ) {
-    std::memcpy( data, src_data, height * bytes_per_line );
+  if ( bytes_per_line == static_cast<int>( image.step ) ) {
+    std::memcpy( data, src_data, image.height * bytes_per_line );
     return;
   }
 
-  for ( int y = 0; y < height; ++y ) {
-    const uchar *src_row = src_data + y * src_step;
+  for ( unsigned int y = 0; y < image.height; ++y ) {
+    const uchar *RESTRICT src_row = src_data + y * image.step;
     uchar *dst_row = data + y * bytes_per_line;
-    std::memcpy( dst_row, src_row, width * BYTES_PER_PIXEL );
+    std::memcpy( dst_row, src_row, image.width * BYTES_PER_PIXEL );
   }
 }
 
@@ -161,18 +175,18 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   switch ( frame.pixelFormat() ) {
   case QVideoFrameFormat::Format_RGBX8888:
     if ( image->encoding == sensor_msgs::image_encodings::RGB8 ) {
-      convertTo3Channel<0, 1, 2, uint8_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::RGB16 ) {
-      convertTo3Channel<0, 1, 2, uint16_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_BGRX8888:
     if ( image->encoding == sensor_msgs::image_encodings::BGR8 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::BGR16 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -180,7 +194,7 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_Y8:
     if ( image->encoding == sensor_msgs::image_encodings::MONO8 ||
          image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ) {
-      copyImageData<1>( image, data, frame.bytesPerLine( 0 ) );
+      copyImageData<1>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -188,27 +202,27 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_Y16:
     if ( image->encoding == sensor_msgs::image_encodings::MONO16 ||
          image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ) {
-      copyImageData<2>( image, data, frame.bytesPerLine( 0 ) );
+      copyImageData<2>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::TYPE_32FC1 ) {
-      convertToY16<float>( image, data, frame.bytesPerLine( 0 ) );
+      convertToY16<float>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_RGBA8888:
     if ( image->encoding == sensor_msgs::image_encodings::RGBA8 ) {
-      convertTo4Channel<0, 1, 2, 3, uint8_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::RGBA16 ) {
-      convertTo4Channel<0, 1, 2, 3, uint16_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_BGRA8888:
     if ( image->encoding == sensor_msgs::image_encodings::BGRA8 ) {
-      convertTo4Channel<0, 1, 2, 3, uint8_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::BGRA16 ) {
-      convertTo4Channel<0, 1, 2, 3, uint16_t>( image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
