@@ -55,7 +55,6 @@ public:
             "No more subscriptions left for topic '%s'. Shutting down subscriber.", topic.c_str() );
         subscriber_.shutdown();
         std::lock_guard image_lock( image_mutex_ );
-        last_image_ = nullptr;
         last_frame_ = QVideoFrame();
       }
     } );
@@ -145,6 +144,9 @@ private:
 
     QVideoFrameFormat::PixelFormat format = getVideoFramePixelFormat( image->encoding );
     QVideoFrame frame;
+    ImageInformation info;
+    info.timestamp = image->header.stamp;
+    info.encoding = image->encoding;
     if ( format != QVideoFrameFormat::Format_Invalid ) {
       frame = QVideoFrame( QVideoFrameFormat( QSize( image->width, image->height ), format ) );
       if ( !writeImageToVideoFrame( image, frame ) ) {
@@ -154,8 +156,8 @@ private:
     {
       std::lock_guard image_lock( image_mutex_ );
       last_received_stamp_ = received_stamp;
-      last_image_ = image;
       last_frame_.swap( frame );
+      last_image_info_ = info;
     }
     // Deliver frames on UI thread
     QMetaObject::invokeMethod( this, "imageDelivery", Qt::AutoConnection );
@@ -163,16 +165,16 @@ private:
 
   Q_INVOKABLE void imageDelivery()
   {
-    sensor_msgs::msg::Image::ConstSharedPtr image;
     rclcpp::Time received;
     QVideoFrame frame;
+    ImageInformation info;
     {
       std::lock_guard image_lock( image_mutex_ );
-      if ( !last_frame_.isValid() || last_image_ == nullptr )
+      if ( !last_frame_.isValid() )
         return;
       last_frame_.swap( frame );
-      image = last_image_;
       received = last_received_stamp_;
+      info = last_image_info_;
     }
     std::vector<std::shared_ptr<ImageTransportSubscriptionHandle>> subscribers;
     {
@@ -184,15 +186,14 @@ private:
         subscribers.push_back( sub_weak.lock() );
       }
     }
-    const rclcpp::Time &image_stamp = image->header.stamp;
-    int network_latency = image_stamp.nanoseconds() != 0
-                              ? static_cast<int>( ( received - image_stamp ).seconds() * 1000 )
+    int network_latency = info.timestamp.nanoseconds() != 0
+                              ? static_cast<int>( ( received - info.timestamp ).seconds() * 1000 )
                               : -1;
     network_latency_average_.add( network_latency );
     auto processing_latency = static_cast<int>( ( clock_.now() - received ).seconds() * 1000 );
     processing_latency_average_.add( processing_latency );
-    if ( image_stamp.nanoseconds() != 0 ) {
-      image_interval_average_.push_back( image_stamp );
+    if ( info.timestamp.nanoseconds() != 0 ) {
+      image_interval_average_.push_back( info.timestamp );
     } else {
       image_interval_average_.push_back( last_received_stamp_ );
     }
@@ -206,7 +207,7 @@ private:
       sub->network_latency = network_latency_average_;
       sub->processing_latency = processing_latency_average_;
       sub->framerate_ = std::round( framerate * 10 ) / 10;
-      sub->callback( frame );
+      sub->callback( frame, info );
     }
   }
 
@@ -221,7 +222,7 @@ private:
   RollingAverage<int, 10> processing_latency_average_;
   rclcpp::Clock clock_ = rclcpp::Clock( RCL_ROS_TIME );
   rclcpp::Time last_received_stamp_;
-  sensor_msgs::msg::Image::ConstSharedPtr last_image_;
+  ImageInformation last_image_info_;
   QVideoFrame last_frame_;
 };
 
@@ -255,11 +256,9 @@ ImageTransportManager &ImageTransportManager::getInstance()
   return manager;
 }
 
-std::shared_ptr<ImageTransportSubscriptionHandle>
-ImageTransportManager::subscribe( const rclcpp::Node::SharedPtr &node, const QString &qtopic,
-                                  quint32 queue_size,
-                                  const image_transport::TransportHints &transport_hints,
-                                  const std::function<void( const QVideoFrame & )> &callback )
+std::shared_ptr<ImageTransportSubscriptionHandle> ImageTransportManager::subscribe(
+    const rclcpp::Node::SharedPtr &node, const QString &qtopic, quint32 queue_size,
+    const image_transport::TransportHints &transport_hints, const ImageCallback &callback )
 {
   if ( subscription_manager_ == nullptr ) {
     subscription_manager_ = std::make_shared<SubscriptionManager>( node );
