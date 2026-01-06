@@ -134,9 +134,10 @@ void convertToY16( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRIC
     for ( int x = 0; x < width; ++x ) {
       const T value = src_row[x];
       // Scale the value to 16 bits
-      uint16_t scaled_value =
-          std::isnan( value ) ? 0 : clampValue<int>( static_cast<int>( value * 1000 ), 1, 65535 );
-      dst_row[x] = scaled_value;
+      const int scaled_value = !std::isfinite( value ) || value == 0
+                                   ? 0
+                                   : clampValue<int>( static_cast<int>( value * 1000 ), 1, 65535 );
+      dst_row[x] = static_cast<uint16_t>( scaled_value );
     }
   }
 }
