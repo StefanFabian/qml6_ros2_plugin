@@ -72,7 +72,12 @@ void ActionClient::checkServerReady()
 void ActionClient::invokeGoalResponseCallback(
     QJSValue callback, ros_babel_fish::BabelFishActionClient::GoalHandle::SharedPtr handle )
 {
-  QJSEngine *engine = qjsEngine( this );
+  QJSEngine *engine = engine_ ? engine_.get() : qjsEngine( this );
+  if ( !engine_ ) {
+    QML_ROS2_PLUGIN_ERROR( "ActionClient: Failed to get QJSEngine in invokeGoalResponseCallback. "
+                           "Can not invoke callback." );
+    return;
+  }
   if ( handle != nullptr )
     callback.call( { engine->newQObject( new GoalHandle( client_, std::move( handle ) ) ) } );
   else
@@ -83,7 +88,12 @@ void ActionClient::invokeFeedbackCallback( QJSValue callback,
                                            BabelFishActionClient::GoalHandle::SharedPtr handle,
                                            CompoundMessage::ConstSharedPtr feedback )
 {
-  QJSEngine *engine = qjsEngine( this );
+  QJSEngine *engine = engine_ ? engine_.get() : qjsEngine( this );
+  if ( !engine_ ) {
+    QML_ROS2_PLUGIN_ERROR( "ActionClient: Failed to get QJSEngine in invokeFeedbackCallback. "
+                           "Can not invoke callback." );
+    return;
+  }
   QJSValue js_goal_handle = engine->newQObject( new GoalHandle( client_, std::move( handle ) ) );
   try {
     QJSValue js_feedback = engine->toScriptValue<QVariant>( msgToMap( feedback ) );
@@ -97,7 +107,12 @@ void ActionClient::invokeResultCallback( QJSValue callback, QString goal_id,
                                          qml6_ros2_plugin::action_goal_status::GoalStatus result_code,
                                          ros_babel_fish::CompoundMessage::ConstSharedPtr result )
 {
-  QJSEngine *engine = qjsEngine( this );
+  QJSEngine *engine = engine_ ? engine_.get() : qjsEngine( this );
+  if ( !engine_ ) {
+    QML_ROS2_PLUGIN_ERROR( "ActionClient: Failed to get QJSEngine in invokeResultCallback. "
+                           "Can not invoke callback." );
+    return;
+  }
   try {
     QVariantMap wrapped_result;
     wrapped_result["goalId"] = goal_id;
@@ -111,6 +126,9 @@ void ActionClient::invokeResultCallback( QJSValue callback, QString goal_id,
 
 QObject *ActionClient::sendGoalAsync( const QVariantMap &goal, QJSValue options )
 {
+  if ( !engine_ ) {
+    engine_ = qjsEngine( this );
+  }
   if ( client_ == nullptr ) {
     QML_ROS2_PLUGIN_ERROR( "Tried to send goal when ActionClient was not connected!" );
     return nullptr;

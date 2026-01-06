@@ -7,6 +7,7 @@
 #include "qml6_ros2_plugin/qobject_ros2.hpp"
 #include "qml6_ros2_plugin/qos.hpp"
 #include <QJSValue>
+#include <QPointer>
 #include <QTimer>
 #include <QVariant>
 
@@ -98,6 +99,7 @@ private:
   };
   // Queue of service calls waiting for the service to become available
   std::vector<WaitingServiceCallData> waiting_service_calls_;
+  QPointer<QJSEngine> engine_;
   int pending_requests_ = 0;
   int connection_timeout_ = 10'000; // Default connection timeout for waiting service calls in ms
 };
