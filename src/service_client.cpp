@@ -114,6 +114,9 @@ int ServiceClient::pendingRequests() const { return pending_requests_; }
 
 void ServiceClient::sendRequestAsync( const QVariantMap &req, const QJSValue &callback )
 {
+  if ( !engine_ ) {
+    engine_ = qjsEngine( this );
+  }
   pending_requests_++;
   if ( !isServiceReady() ) {
     QML_ROS2_PLUGIN_DEBUG( "Service '%s' not ready, waiting up to %d ms.",
@@ -161,7 +164,12 @@ void ServiceClient::sendRequestAsync( const QVariantMap &req, const QJSValue &ca
 
 void ServiceClient::invokeCallback( QJSValue value, const QVariant &result )
 {
-  QJSEngine *engine = qjsEngine( this );
+  QJSEngine *engine = engine_ ? engine_.get() : qjsEngine( this );
+  if ( !engine ) {
+    QML_ROS2_PLUGIN_ERROR(
+        "ServiceClient: Failed to get QJSEngine in invokeCallback. Can not invoke callback." );
+    return;
+  }
   value.call( { engine->toScriptValue( result ) } );
 }
 } // namespace qml6_ros2_plugin
