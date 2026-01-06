@@ -11,12 +11,11 @@
 #include <ros_babel_fish/babel_fish.hpp>
 
 #include <QJSValue>
+#include <QPointer>
 #include <QTimer>
 
 namespace qml6_ros2_plugin
 {
-class NodeHandle;
-
 class GoalHandle;
 
 class ActionClient : public QObjectRos2
@@ -94,6 +93,7 @@ private:
   QString name_;
   ros_babel_fish::BabelFishActionClient::SharedPtr client_;
   QTimer connect_timer_;
+  QPointer<QJSEngine> engine_;
 };
 } // namespace qml6_ros2_plugin
 
