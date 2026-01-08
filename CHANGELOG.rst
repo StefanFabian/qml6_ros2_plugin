@@ -2,6 +2,14 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed segfault if Service or ActionClient are no longer associated with qjsEngine when callback is invoked.
+* Improved image conversion to also deal with infinite values in depth images.
+* Fixed crash when ServiceClient is processing request while client is destroyed.
+  Use QPointer for callbacks to prevent crashes due to the object being destroyed while an asynchronous operation is still in progress.
+* Contributors: Stefan Fabian
+
 1.25.121 (2025-12-12)
 ---------------------
 * Added encoding information to ImageTransportSubscription and fixed conversion from float to Y16.
