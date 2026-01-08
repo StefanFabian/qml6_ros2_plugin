@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.26.10 (2026-01-08)
+--------------------
 * Fixed segfault if Service or ActionClient are no longer associated with qjsEngine when callback is invoked.
 * Improved image conversion to also deal with infinite values in depth images.
 * Fixed crash when ServiceClient is processing request while client is destroyed.
