@@ -203,8 +203,8 @@ void ServiceClient::invokeCallback( int id, const QVariant &result )
 
 int ServiceClient::generateInternalCallbackId()
 {
-  // Create a pseudo-random internal goal ID
-  static int current_id = 0;
+  // Create a unique incrementing internal goal ID
+  static std::atomic<int> current_id = 0;
   current_id++;
   return current_id;
 }

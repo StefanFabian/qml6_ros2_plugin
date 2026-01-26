@@ -109,7 +109,6 @@ void ActionClient::checkServerReady()
 
   // Remove pending goals that timed out or failed to send
   for ( const auto &id : to_remove ) { pending_goals_.erase( id ); }
-  lock.unlock();
 
   emit serverReadyChanged();
 }
@@ -133,7 +132,6 @@ void ActionClient::invokeGoalResponseCallback(
   }
   const PendingGoal &pending_goal = it->second;
   const QJSValue &callback = pending_goal.goal_callback;
-  lock.unlock();
   if ( !callback.isCallable() ) {
     return;
   }
@@ -156,13 +154,12 @@ void ActionClient::invokeFeedbackCallback( int internal_goal_id,
   std::unique_lock lock( pending_goals_mutex_ );
   auto it = pending_goals_.find( internal_goal_id );
   if ( it == pending_goals_.end() ) {
-    QML_ROS2_PLUGIN_ERROR( "ActionClient: Could not find pending goal with internal ID %d in "
+    QML_ROS2_PLUGIN_DEBUG( "ActionClient: Could not find pending goal with internal ID %d in "
                            "invokeFeedbackCallback. Can not invoke callback.",
                            internal_goal_id );
     return;
   }
   const PendingGoal &pending_goal = it->second;
-  lock.unlock();
   const QJSValue &callback = pending_goal.feedback_callback;
   if ( !callback.isCallable() ) {
     return;
@@ -194,7 +191,6 @@ void ActionClient::invokeResultCallback( int internal_goal_id, QString goal_id,
     return;
   }
   const PendingGoal &pending_goal = it->second;
-  lock.unlock(); // Unlock before calling user code to avoid deadlocks
   const QJSValue &callback = pending_goal.result_callback;
   if ( callback.isCallable() ) {
     try {
@@ -207,7 +203,6 @@ void ActionClient::invokeResultCallback( int internal_goal_id, QString goal_id,
       QML_ROS2_PLUGIN_ERROR( "Failed to translate Action result: %s", ex.what() );
     }
   }
-  lock.lock(); // Lock again to remove the goal as it is done
   pending_goals_.erase( internal_goal_id );
 }
 
@@ -270,8 +265,8 @@ void ActionClient::cancelGoalsBefore( const QDateTime &time )
 
 int ActionClient::generateInternalGoalId()
 {
-  // Create a pseudo-random internal goal ID
-  static int current_id = 0;
+  // Create a unique incrementing internal goal ID
+  static std::atomic<int> current_id = 0;
   current_id++;
   return current_id;
 }
