@@ -522,6 +522,9 @@ return {
   ASSERT_TRUE( waitFor( [handle]() { return handle->status() == action_goal_status::Succeeded; }, 3s ) )
       << handle->status();
   EXPECT_EQ( callback_watcher->feedback, 9 );
+  ASSERT_TRUE( waitFor( [&callback_watcher, handle]() {
+    return callback_watcher->results.find( handle->goalId() ) != callback_watcher->results.end();
+  } ) );
   QVariantMap result_map = callback_watcher->results[handle->goalId()];
   ASSERT_TRUE( result_map.contains( "goalId" ) )
       << "Keys: " << result_map.keys().join( ", " ).toStdString();
