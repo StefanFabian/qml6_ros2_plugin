@@ -16,8 +16,9 @@ QString AmentIndex::getPackageShareDirectory( const QString &package_name )
     return {};
   }
   try {
-    return QString::fromStdString(
-        ament_index_cpp::get_package_share_directory( package_name.toStdString() ) );
+    std::filesystem::path path;
+    ament_index_cpp::get_package_share_directory( package_name.toStdString(), path );
+    return QString::fromStdString( path.string() );
   } catch ( ament_index_cpp::PackageNotFoundError &ex ) {
     return {};
   }
@@ -29,7 +30,9 @@ QString AmentIndex::getPackagePrefix( const QString &package_name )
     return {};
   }
   try {
-    return QString::fromStdString( ament_index_cpp::get_package_prefix( package_name.toStdString() ) );
+    std::filesystem::path path;
+    ament_index_cpp::get_package_prefix( package_name.toStdString(), path );
+    return QString::fromStdString( path.string() );
   } catch ( ament_index_cpp::PackageNotFoundError &ex ) {
     return {};
   }
