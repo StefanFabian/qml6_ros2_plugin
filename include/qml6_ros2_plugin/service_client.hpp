@@ -83,9 +83,11 @@ private slots:
 
   void checkServiceReady();
 
-  void invokeCallback( QJSValue value, const QVariant &result );
+  void invokeCallback( int id, const QVariant &result );
 
 private:
+  int generateInternalCallbackId();
+
   ros_babel_fish::BabelFish babel_fish_;
   QoSWrapper qos_;
   QString name_;
@@ -94,11 +96,13 @@ private:
   QTimer connect_timer_;
   struct WaitingServiceCallData {
     QVariantMap request;
-    QJSValue callback;
+    int id;
     clock::time_point start;
   };
   // Queue of service calls waiting for the service to become available
   std::vector<WaitingServiceCallData> waiting_service_calls_;
+  std::unordered_map<int, QJSValue> pending_callbacks_;
+  std::mutex check_ready_mutex_;
   QPointer<QJSEngine> engine_;
   int pending_requests_ = 0;
   int connection_timeout_ = 10'000; // Default connection timeout for waiting service calls in ms
