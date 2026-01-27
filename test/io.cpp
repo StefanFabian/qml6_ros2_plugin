@@ -11,6 +11,12 @@
 #include <QQmlEngine>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
+#if __has_include( <ament_index_cpp/version.h> )
+  #include <ament_index_cpp/version.h>
+#else
+  #define AMENT_INDEX_CPP_VERSION_GTE( major, minor, patch ) false
+#endif
+
 using namespace qml6_ros2_plugin;
 
 TEST( IO, yaml )
@@ -46,7 +52,11 @@ TEST( IO, yaml )
   QVariant map = conversion::msgToMap( translated );
 
   std::filesystem::path path;
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
   ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin", path );
+#else
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+#endif
   path += "/test/test_io/array_message.yaml";
   ASSERT_TRUE( io.writeYaml( QString::fromStdString( path.string() ), map ) );
 
@@ -87,7 +97,11 @@ QtObject {
 )",
                      QUrl() );
   auto obj = std::unique_ptr<QObject>( component.create() );
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
   ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin", path );
+#else
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+#endif
   path += "/test/test_io/qobject.yaml";
   ASSERT_TRUE(
       io.writeYaml( QString::fromStdString( path.string() ), QVariant::fromValue( obj.get() ) ) );
@@ -136,7 +150,11 @@ QtObject {
   ASSERT_EQ( arr[1].typeId(), QMetaType::QString );
   ASSERT_EQ( arr[1].toString(), "second" );
 
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
   ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin", path );
+#else
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+#endif
   path += "/test/test_io/test.yaml";
   file = io.readYaml( QString::fromStdString( path.string() ) );
   ASSERT_EQ( file.typeId(), QMetaType::QVariantMap );
