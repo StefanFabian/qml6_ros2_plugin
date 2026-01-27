@@ -45,8 +45,7 @@ TEST( IO, yaml )
       std::shared_ptr<void>( &test_array, []( const void * ) { /* do nothing */ } ) );
   QVariant map = conversion::msgToMap( translated );
 
-  std::filesystem::path path =
-      ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+  std::filesystem::path path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
   path += "/test/test_io/array_message.yaml";
   ASSERT_TRUE( io.writeYaml( QString::fromStdString( path.string() ), map ) );
 
