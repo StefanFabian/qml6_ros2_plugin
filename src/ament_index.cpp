@@ -6,7 +6,7 @@
 #if __has_include( <ament_index_cpp/version.h> )
   #include <ament_index_cpp/version.h>
 #else
-  #define AMENT_INDEX_CPP_VERSION_GTE(major, minor, patch) false
+  #define AMENT_INDEX_CPP_VERSION_GTE( major, minor, patch ) false
 #endif
 
 #include <ament_index_cpp/get_package_prefix.hpp>
@@ -22,7 +22,7 @@ QString AmentIndex::getPackageShareDirectory( const QString &package_name )
     return {};
   }
   try {
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
     std::filesystem::path path;
     ament_index_cpp::get_package_share_directory( package_name.toStdString(), path );
     return QString::fromStdString( path.string() );
@@ -41,7 +41,7 @@ QString AmentIndex::getPackagePrefix( const QString &package_name )
     return {};
   }
   try {
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
     std::filesystem::path path;
     ament_index_cpp::get_package_prefix( package_name.toStdString(), path );
     return QString::fromStdString( path.string() );
