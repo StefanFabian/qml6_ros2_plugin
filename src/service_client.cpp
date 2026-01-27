@@ -205,7 +205,6 @@ int ServiceClient::generateInternalCallbackId()
 {
   // Create a unique incrementing internal goal ID
   static std::atomic<int> current_id = 0;
-  current_id++;
-  return current_id;
+  return current_id.fetch_add( 1 );
 }
 } // namespace qml6_ros2_plugin

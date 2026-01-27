@@ -6,11 +6,13 @@
 
 #include "qml6_ros2_plugin/qobject_ros2.hpp"
 #include "qml6_ros2_plugin/qos.hpp"
+
 #include <QJSValue>
 #include <QPointer>
 #include <QTimer>
 #include <QVariant>
-
+#include <chrono>
+#include <mutex>
 #include <ros_babel_fish/babel_fish.hpp>
 
 namespace qml6_ros2_plugin
