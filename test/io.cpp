@@ -45,11 +45,11 @@ TEST( IO, yaml )
       std::shared_ptr<void>( &test_array, []( const void * ) { /* do nothing */ } ) );
   QVariant map = conversion::msgToMap( translated );
 
-  std::string path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
-                     "/test/test_io/array_message.yaml";
-  ASSERT_TRUE( io.writeYaml( QString::fromStdString( path ), map ) );
+  std::filesystem::path path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+  path += "/test/test_io/array_message.yaml";
+  ASSERT_TRUE( io.writeYaml( QString::fromStdString( path.string() ), map ) );
 
-  QVariant file = io.readYaml( QString::fromStdString( path ) );
+  QVariant file = io.readYaml( QString::fromStdString( path.string() ) );
 
   Message::SharedPtr file_msg =
       fish.create_message_shared( "ros_babel_fish_test_msgs/msg/TestArray" );
@@ -86,11 +86,12 @@ QtObject {
 )",
                      QUrl() );
   auto obj = std::unique_ptr<QObject>( component.create() );
-  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
-         "/test/test_io/qobject.yaml";
-  ASSERT_TRUE( io.writeYaml( QString::fromStdString( path ), QVariant::fromValue( obj.get() ) ) );
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+  path += "/test/test_io/qobject.yaml";
+  ASSERT_TRUE(
+      io.writeYaml( QString::fromStdString( path.string() ), QVariant::fromValue( obj.get() ) ) );
 
-  file = io.readYaml( QString::fromStdString( path ) );
+  file = io.readYaml( QString::fromStdString( path.string() ) );
   ASSERT_EQ( file.typeId(), QMetaType::QVariantMap );
   QVariantMap content = file.toMap();
   ASSERT_TRUE( content.contains( "b" ) );
@@ -134,9 +135,9 @@ QtObject {
   ASSERT_EQ( arr[1].typeId(), QMetaType::QString );
   ASSERT_EQ( arr[1].toString(), "second" );
 
-  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" ) +
-         "/test/test_io/test.yaml";
-  file = io.readYaml( QString::fromStdString( path ) );
+  path = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
+  path += "/test/test_io/test.yaml";
+  file = io.readYaml( QString::fromStdString( path.string() ) );
   ASSERT_EQ( file.typeId(), QMetaType::QVariantMap );
   content = file.toMap();
   ASSERT_TRUE( content.contains( "first" ) );
