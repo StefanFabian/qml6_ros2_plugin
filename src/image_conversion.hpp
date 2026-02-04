@@ -57,6 +57,8 @@ inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::strin
   } else if ( encoding == sensor_msgs::image_encodings::YUV422 ) {
 #endif
     return QVideoFrameFormat::Format_UYVY;
+  } else if ( encoding == sensor_msgs::image_encodings::NV21 ) {
+    return QVideoFrameFormat::Format_NV21;
   }
   QML_ROS2_PLUGIN_WARN_THROTTLE( 5000, "Unsupported image encoding '%s' received.", encoding.c_str() );
   return QVideoFrameFormat::Format_Invalid;
@@ -64,7 +66,7 @@ inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::strin
 
 template<int IDX_1, int IDX_2, int IDX_3, typename CHANNEL_TYPE>
 void convertTo3Channel( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
-                        int bytes_per_line )
+                        const int bytes_per_line )
 {
   const uchar *RESTRICT src_data = image.data.data();
   const auto width = static_cast<int>( image.width );
@@ -155,8 +157,28 @@ void copyImageData( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRI
 
   for ( unsigned int y = 0; y < image.height; ++y ) {
     const uchar *RESTRICT src_row = src_data + y * image.step;
-    uchar *dst_row = data + y * bytes_per_line;
+    uchar *RESTRICT dst_row = data + y * bytes_per_line;
     std::memcpy( dst_row, src_row, image.width * BYTES_PER_PIXEL );
+  }
+}
+
+void copyNv21ToVideoFrame( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data0,
+                           uchar *RESTRICT data1, const int step0, const int step1 )
+{
+  const int width = static_cast<int>( image.width );
+  const int height = static_cast<int>( image.height );
+  const uchar *RESTRICT src_data = image.data.data();
+  const int src_stride = static_cast<int>( image.step );
+  for ( int y = 0; y < height; ++y ) {
+    const uchar *RESTRICT src_row = src_data + y * src_stride;
+    uchar *RESTRICT dst_row = data0 + y * step0;
+    memcpy( dst_row, src_row, width );
+  }
+
+  for ( int y = 0; y < height / 2; ++y ) {
+    const uchar *RESTRICT src_row = src_data + ( height + y ) * src_stride;
+    uchar *RESTRICT dst_row = data1 + y * step1;
+    memcpy( dst_row, src_row, width );
   }
 }
 
@@ -166,28 +188,22 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   if ( !frame.map( QVideoFrame::WriteOnly ) )
     return false;
 
-  uchar *data = frame.bits( 0 );
-  if ( frame.planeCount() > 1 ) {
-    QML_ROS2_PLUGIN_ERROR_THROTTLE( 1000, "Multi-planar QVideoFrame formats are not supported." );
-    frame.unmap();
-    return false;
-  }
   bool success = true;
   switch ( frame.pixelFormat() ) {
   case QVideoFrameFormat::Format_RGBX8888:
     if ( image->encoding == sensor_msgs::image_encodings::RGB8 ) {
-      convertTo3Channel<0, 1, 2, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint8_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::RGB16 ) {
-      convertTo3Channel<0, 1, 2, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint16_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_BGRX8888:
     if ( image->encoding == sensor_msgs::image_encodings::BGR8 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint8_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::BGR16 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint16_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -195,7 +211,7 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_Y8:
     if ( image->encoding == sensor_msgs::image_encodings::MONO8 ||
          image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ) {
-      copyImageData<1>( *image, data, frame.bytesPerLine( 0 ) );
+      copyImageData<1>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -203,27 +219,27 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_Y16:
     if ( image->encoding == sensor_msgs::image_encodings::MONO16 ||
          image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ) {
-      copyImageData<2>( *image, data, frame.bytesPerLine( 0 ) );
+      copyImageData<2>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::TYPE_32FC1 ) {
-      convertToY16<float>( *image, data, frame.bytesPerLine( 0 ) );
+      convertToY16<float>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_RGBA8888:
     if ( image->encoding == sensor_msgs::image_encodings::RGBA8 ) {
-      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::RGBA16 ) {
-      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
     break;
   case QVideoFrameFormat::Format_BGRA8888:
     if ( image->encoding == sensor_msgs::image_encodings::BGRA8 ) {
-      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint8_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::BGRA16 ) {
-      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo4Channel<0, 1, 2, 3, uint16_t>( *image, frame.bits( 0 ), frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -231,7 +247,7 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_YUYV:
     if ( image->encoding == sensor_msgs::image_encodings::YUV422_YUY2 ||
          image->encoding == sensor_msgs::image_encodings::YUYV ) {
-      std::memcpy( data, image->data.data(), image->data.size() );
+      std::memcpy( frame.bits( 0 ), image->data.data(), image->data.size() );
     } else {
       success = false;
     }
@@ -239,7 +255,15 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_UYVY:
     if ( image->encoding == sensor_msgs::image_encodings::YUV422 ||
          image->encoding == sensor_msgs::image_encodings::UYVY ) {
-      std::memcpy( data, image->data.data(), image->data.size() );
+      std::memcpy( frame.bits( 0 ), image->data.data(), image->data.size() );
+    } else {
+      success = false;
+    }
+    break;
+  case QVideoFrameFormat::Format_NV21:
+    if ( image->encoding == sensor_msgs::image_encodings::NV21 ) {
+      copyNv21ToVideoFrame( *image, frame.bits( 0 ), frame.bits( 1 ), frame.bytesPerLine( 0 ),
+                            frame.bytesPerLine( 1 ) );
     } else {
       success = false;
     }
