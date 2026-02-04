@@ -57,6 +57,8 @@ inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::strin
   } else if ( encoding == sensor_msgs::image_encodings::YUV422 ) {
 #endif
     return QVideoFrameFormat::Format_UYVY;
+  } else if ( encoding == sensor_msgs::image_encodings::NV21 ) {
+    return QVideoFrameFormat::Format_NV21;
   }
   QML_ROS2_PLUGIN_WARN_THROTTLE( 5000, "Unsupported image encoding '%s' received.", encoding.c_str() );
   return QVideoFrameFormat::Format_Invalid;
@@ -64,7 +66,7 @@ inline QVideoFrameFormat::PixelFormat getVideoFramePixelFormat( const std::strin
 
 template<int IDX_1, int IDX_2, int IDX_3, typename CHANNEL_TYPE>
 void convertTo3Channel( const sensor_msgs::msg::Image &RESTRICT image, uchar *RESTRICT data,
-                        int bytes_per_line )
+                        const int bytes_per_line )
 {
   const uchar *RESTRICT src_data = image.data.data();
   const auto width = static_cast<int>( image.width );
@@ -185,9 +187,9 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
     break;
   case QVideoFrameFormat::Format_BGRX8888:
     if ( image->encoding == sensor_msgs::image_encodings::BGR8 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else if ( image->encoding == sensor_msgs::image_encodings::BGR16 ) {
-      convertTo3Channel<2, 1, 0, uint8_t>( *image, data, frame.bytesPerLine( 0 ) );
+      convertTo3Channel<0, 1, 2, uint16_t>( *image, data, frame.bytesPerLine( 0 ) );
     } else {
       success = false;
     }
@@ -239,6 +241,13 @@ inline bool writeImageToVideoFrame( const sensor_msgs::msg::Image::ConstSharedPt
   case QVideoFrameFormat::Format_UYVY:
     if ( image->encoding == sensor_msgs::image_encodings::YUV422 ||
          image->encoding == sensor_msgs::image_encodings::UYVY ) {
+      std::memcpy( data, image->data.data(), image->data.size() );
+    } else {
+      success = false;
+    }
+    break;
+  case QVideoFrameFormat::Format_NV21:
+    if ( image->encoding == sensor_msgs::image_encodings::NV21 ) {
       std::memcpy( data, image->data.data(), image->data.size() );
     } else {
       success = false;
