@@ -15,7 +15,7 @@ You can run the example using the ``qmlscene`` executable:
 
 .. code-block::
 
-  qmlscene subscription.qml
+  qmlscene -qt=qt6 subscription.qml
 
 Publisher
 =========
@@ -40,7 +40,7 @@ First, launch the example:
 
 .. code-block::
 
-  roslaunch -qt=qt6 urdf_sim_tutorial 13-diffdrive.launch
+  roslaunch urdf_sim_tutorial 13-diffdrive.launch
 
 Next, launch the example UI:
 
