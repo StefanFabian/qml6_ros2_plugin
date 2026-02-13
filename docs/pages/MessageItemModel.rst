@@ -31,7 +31,7 @@ Example Usage:
           color: "#cccccc"
           text: {
             if (model.edit == null) return "" + model.display || "";
-            if (model.type === "compound" || "model.type" === "array") return "";
+            if (model.type === "compound" || model.type === "array") return "";
             if (model.type === "bool") return model.edit ? "true" : "false";
             return model.edit + "";
           }
