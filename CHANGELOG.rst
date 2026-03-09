@@ -2,6 +2,22 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix yaml conversion not handling QJSValue correctly.
+* Updated documentation.
+* Fix BGR color swap and added support for NV21. (`#18 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/18>`_)
+  * Fix BGR color swap and added support for NV21.
+* Use a symlink instead of installing twice. (`#14 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/14>`_)
+  * Use a symlink instead of installing twice.
+  This fixes issues where an application may link against both files through plugins which separates the singletons as they exist per inode and creates complex issues.
+* Don't pass QJSValue between threads (`#9 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/9>`_)
+  * Move all QJSValue to data structures and only pass id for retrieval to fix threading segmentation faults.
+  Also fixes check service ready being called while object is already destructed.
+  * Fixed deprecation of ament_index_cpp methods.  Change ament_index_cpp method based on available version.
+* Added funding details.
+* Contributors: Stefan Fabian
+
 1.26.10 (2026-01-08)
 --------------------
 * Fixed segfault if Service or ActionClient are no longer associated with qjsEngine when callback is invoked.
