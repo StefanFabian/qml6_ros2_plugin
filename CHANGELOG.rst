@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.26.30 (2026-03-09)
+--------------------
 * Fix yaml conversion not handling QJSValue correctly.
 * Updated documentation.
 * Fix BGR color swap and added support for NV21. (`#18 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/18>`_)
