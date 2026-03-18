@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.26.31 (2026-03-18)
+--------------------
 * Added missing build export depends.
 * Contributors: Stefan Fabian
 
