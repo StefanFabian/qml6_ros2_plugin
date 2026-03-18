@@ -26,6 +26,9 @@
   <build_depend>qt6-base-dev</build_depend>
   <build_depend>qt6-declarative-dev</build_depend>
   <build_depend>qt6-multimedia-dev</build_depend>
+  <build_export_depend>qt6-base-dev</build_export_depend>
+  <build_export_depend>qt6-declarative-dev</build_export_depend>
+  <build_export_depend>qt6-multimedia-dev</build_export_depend>
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>example_interfaces</test_depend>
