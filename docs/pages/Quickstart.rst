@@ -85,7 +85,7 @@ or a button calling a service or action client:
       // Limit to one service call at a time but this is optional, you can do multiple calls in parallel
       if (sending) return
       sending = true
-      myServiceClient.callAsync({ a: 42, b: 1337 }, function(result) {
+      client.sendRequestAsync({ a: 42, b: 1337 }, function(result) {
         // The response callback will be called once the service response is received or the call failed.
         // In that case result will be false.
         sending = false
