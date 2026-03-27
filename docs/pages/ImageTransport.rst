@@ -28,8 +28,8 @@ Example:
     orientation: 90
   }
 
-The :cpp:class:`ImageTransportSubscription <qml6_ros2_plugin::ImageTransportSubscription>` can be used as
-the source of a ``VideoOutput`` to display the camera images as they are received.
+The :cpp:class:`ImageTransportSubscription <qml6_ros2_plugin::ImageTransportSubscription>`
+uses the ``videoSink`` of a ``VideoOutput`` to display the camera images as they are received.
 Additionally, it can be configured to show a blank image after x milliseconds using the ``timeout`` property
 which is set to 3000ms (3s) by default. This can be disabled by setting the ``timeout`` to 0.
 
