@@ -52,32 +52,33 @@ void ImageTransportSubscription::onRos2Shutdown() { shutdownSubscriber(); }
 
 void ImageTransportSubscription::initSubscriber()
 {
-  // This makes sure we lazy subscribe and only subscribe if there is a surface to write to
-  if ( sink_ == nullptr || !enabled_ || topic_.isEmpty() )
-    return;
-  if ( !Ros2Qml::getInstance().isInitialized() )
-    return;
   bool was_subscribed = subscribed_;
   if ( subscribed_ ) {
     blockSignals( true );
     shutdownSubscriber();
     blockSignals( false );
   }
-  // TODO Transport hints
-  const rclcpp::Node::SharedPtr &node = Ros2Qml::getInstance().node();
-  image_transport::TransportHints transport_hints( node.get(), default_transport_.toStdString() );
-  subscription_ = ImageTransportManager::getInstance().subscribe(
-      node, topic_, queue_size_, transport_hints,
-      [this]( const QVideoFrame &frame, const ImageInformation &info ) {
-        if ( encoding_ != info.encoding ) {
-          encoding_ = info.encoding;
-          emit encodingChanged();
-        }
-        presentFrame( frame );
-      } );
+  bool can_subscribe = Ros2Qml::getInstance().isInitialized();
+  // This makes sure we lazy subscribe and only subscribe if there is a surface to write to
+  can_subscribe &= sink_ != nullptr && enabled_ && !topic_.isEmpty();
+  if ( can_subscribe ) {
+    // TODO Transport hints
+    const rclcpp::Node::SharedPtr &node = Ros2Qml::getInstance().node();
+    image_transport::TransportHints transport_hints( node.get(), default_transport_.toStdString() );
+    subscription_ = ImageTransportManager::getInstance().subscribe(
+        node, topic_, queue_size_, transport_hints,
+        [this]( const QVideoFrame &frame, const ImageInformation &info ) {
+          if ( encoding_ != info.encoding ) {
+            encoding_ = info.encoding;
+            emit encodingChanged();
+          }
+          presentFrame( frame );
+        } );
+  }
   subscribed_ = subscription_ != nullptr;
-  if ( !was_subscribed )
+  if ( subscribed_ != was_subscribed )
     emit subscribedChanged();
+  emit encodingChanged();
   emit framerateChanged();
   emit networkLatencyChanged();
   emit processingLatencyChanged();
@@ -90,14 +91,18 @@ void ImageTransportSubscription::shutdownSubscriber()
     return;
   subscription_.reset();
   subscribed_ = false;
+  encoding_ = "";
   last_framerate_ = 0;
   last_network_latency_ = -1;
   last_processing_latency_ = -1;
+  emit encodingChanged();
   emit framerateChanged();
   emit networkLatencyChanged();
   emit processingLatencyChanged();
   emit latencyChanged();
   emit subscribedChanged();
+  if ( sink_ != nullptr )
+    sink_->setVideoFrame( QVideoFrame() );
 }
 
 void ImageTransportSubscription::onNoImageTimeout()
@@ -122,6 +127,9 @@ void ImageTransportSubscription::presentFrame( const QVideoFrame &frame )
     return;
   last_frame_ = frame;
   sink_->setVideoFrame( frame );
+  if ( timeout_ != 0 ) {
+    no_image_timer_.start( timeout_ );
+  }
   // Return if this is the last frame of our subscription.
   if ( subscription_ == nullptr )
     return;
@@ -140,14 +148,11 @@ void ImageTransportSubscription::presentFrame( const QVideoFrame &frame )
   last_frame_timestamp_ = clock_.now();
   last_network_latency_ = subscription_->networkLatency();
   last_processing_latency_ = subscription_->processingLatency();
-  if ( timeout_ != 0 ) {
-    no_image_timer_.start( throttle_interval_ + timeout_ );
-  }
 }
 
 QString ImageTransportSubscription::topic() const
 {
-  if ( subscription_ )
+  if ( subscription_ && !subscription_->getTopic().empty() )
     return QString::fromStdString( subscription_->getTopic() );
   return topic_;
 }

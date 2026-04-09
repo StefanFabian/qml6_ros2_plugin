@@ -144,7 +144,6 @@ private:
   std::string encoding_;
   double last_framerate_ = 0;
   quint32 queue_size_;
-  int throttle_interval_ = 0;
   int last_network_latency_ = -1;
   int last_processing_latency_ = -1;
   int timeout_ = 3000;
