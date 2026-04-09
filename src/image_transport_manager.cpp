@@ -69,7 +69,7 @@ public:
     // Make sure we don't subscribe twice in a row due to a race condition
     std::unique_lock lock( subscribe_mutex_ );
     if ( subscribe_future_.valid() &&
-         subscribe_future_.wait_for( 0ms ) == std::future_status::timeout ) {
+         subscribe_future_.wait_for( 100us ) == std::future_status::timeout ) {
       // Already subscribing
       return;
     }
