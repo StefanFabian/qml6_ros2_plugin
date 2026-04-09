@@ -127,6 +127,9 @@ void ImageTransportSubscription::presentFrame( const QVideoFrame &frame )
     return;
   last_frame_ = frame;
   sink_->setVideoFrame( frame );
+  if ( timeout_ != 0 ) {
+    no_image_timer_.start( timeout_ );
+  }
   // Return if this is the last frame of our subscription.
   if ( subscription_ == nullptr )
     return;
@@ -145,9 +148,6 @@ void ImageTransportSubscription::presentFrame( const QVideoFrame &frame )
   last_frame_timestamp_ = clock_.now();
   last_network_latency_ = subscription_->networkLatency();
   last_processing_latency_ = subscription_->processingLatency();
-  if ( timeout_ != 0 ) {
-    no_image_timer_.start( throttle_interval_ + timeout_ );
-  }
 }
 
 QString ImageTransportSubscription::topic() const
