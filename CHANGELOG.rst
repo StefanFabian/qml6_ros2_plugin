@@ -2,6 +2,14 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improved robustness of image transport property change handling. (`#38 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/38>`_)
+  * Improved robustness of image transport property change handling.
+  Properly reset old properties when topic or transport is changed.
+  * Fix no image timer not being started if subscription was reset.
+* Contributors: Stefan Fabian
+
 4.26.30 (2026-03-18)
 --------------------
 * Added missing build export depends.
