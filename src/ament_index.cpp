@@ -10,7 +10,11 @@
 #endif
 
 #include <ament_index_cpp/get_package_prefix.hpp>
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 2 )
+  #include <ament_index_cpp/get_package_share_path.hpp>
+#else
+  #include <ament_index_cpp/get_package_share_directory.hpp>
+#endif
 #include <ament_index_cpp/get_packages_with_prefixes.hpp>
 
 namespace qml6_ros2_plugin
@@ -22,7 +26,11 @@ QString AmentIndex::getPackageShareDirectory( const QString &package_name )
     return {};
   }
   try {
-#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 2 )
+    std::filesystem::path path =
+        ament_index_cpp::get_package_share_path( package_name.toStdString() );
+    return QString::fromStdString( path.string() );
+#elif AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
     std::filesystem::path path;
     ament_index_cpp::get_package_share_directory( package_name.toStdString(), path );
     return QString::fromStdString( path.string() );
