@@ -49,6 +49,8 @@ set(SOURCES
   include/qml6_ros2_plugin/ros2_init_options.hpp
   include/qml6_ros2_plugin/service_client.hpp
   include/qml6_ros2_plugin/subscription.hpp
+  include/qml6_ros2_plugin/tf_buffer.hpp
+  include/qml6_ros2_plugin/tf_frame_info.hpp
   include/qml6_ros2_plugin/tf_transform.hpp
   include/qml6_ros2_plugin/tf_transform_listener.hpp
   include/qml6_ros2_plugin/topic_info.hpp
@@ -72,6 +74,7 @@ set(SOURCES
   src/ros2_init_options.cpp
   src/service_client.cpp
   src/subscription.cpp
+  src/tf_buffer.cpp
   src/tf_transform.cpp
   src/tf_transform_listener.cpp
 )
@@ -110,6 +113,10 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_communication test/communication.cpp)
   target_link_libraries(test_communication ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
+
+  ament_add_gtest(test_tf_buffer test/tf_buffer.cpp)
+  ament_target_dependencies(test_tf_buffer ${TEST_DEPENDENCIES})
+  target_link_libraries(test_tf_buffer ${PROJECT_NAME} Qt6::Test)
 
   ament_add_gtest(test_message_conversions test/message_conversions.cpp)
   target_link_libraries(test_message_conversions ${PROJECT_NAME} ${TEST_DEPENDENCIES})
