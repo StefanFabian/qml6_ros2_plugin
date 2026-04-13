@@ -115,8 +115,7 @@ if(BUILD_TESTING)
   target_link_libraries(test_communication ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
 
   ament_add_gtest(test_tf_buffer test/tf_buffer.cpp)
-  ament_target_dependencies(test_tf_buffer ${TEST_DEPENDENCIES})
-  target_link_libraries(test_tf_buffer ${PROJECT_NAME} Qt6::Test)
+  target_link_libraries(test_tf_buffer ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
 
   ament_add_gtest(test_message_conversions test/message_conversions.cpp)
   target_link_libraries(test_message_conversions ${PROJECT_NAME} ${TEST_DEPENDENCIES})
