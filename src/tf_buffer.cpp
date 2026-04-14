@@ -26,7 +26,7 @@ constexpr std::chrono::seconds kMaxCacheAge{ 60 };
 
 TfBuffer::TfBuffer( QObject *parent ) : QObjectRos2( parent ) { }
 
-TfBuffer::~TfBuffer() = default;
+TfBuffer::~TfBuffer() { unsubscribeTopics(); }
 
 TfBuffer::CallbackActivityGuard::CallbackActivityGuard( TfBuffer *buffer )
     : buffer_( buffer ), active_( false )
@@ -60,9 +60,9 @@ void TfBuffer::setNs( const QString &ns )
     clean_ns.chop( 1 );
   if ( clean_ns == namespace_ )
     return;
-  int validation_result;
-  size_t invalid_index;
-  rcl_ret_t ret = rcl_validate_topic_name( ( clean_ns.toStdString() + "tf" ).c_str(),
+  int validation_result = 0;
+  size_t invalid_index = 0;
+  rcl_ret_t ret = rcl_validate_topic_name( ( clean_ns.toStdString() + "/tf" ).c_str(),
                                            &validation_result, &invalid_index );
   if ( ret != RCL_RET_OK || validation_result != RCL_TOPIC_NAME_VALID ) {
     QML_ROS2_PLUGIN_ERROR( "Invalid namespace '%s': %s (at index %zu)",

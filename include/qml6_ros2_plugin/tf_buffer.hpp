@@ -219,8 +219,6 @@ private:
 
   static TfFrameInfo frameStateToInfo( const FrameState &state );
 
-  static std::string makeTopicName( const QString &ns, const char *leaf );
-
   QString namespace_;
   std::unique_ptr<tf2_ros::Buffer> buffer_;
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_sub_;
