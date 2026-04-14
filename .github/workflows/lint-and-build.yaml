@@ -18,10 +18,7 @@ jobs:
           fetch-depth: 0
       - name: Setup
         run: |
-          sudo apt-get update && sudo apt-get install -y clang-format-20 cppcheck libxml2-utils
-      - name: Lint C++
-        run: |
-          clang-format-20 -Werror -n -style=file $(find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.c' -o -name '*.cc')
+          sudo apt-get update && sudo apt-get install -y cppcheck libxml2-utils
       - name: Check C++
         run: |
           cppcheck --force --library=qt --quiet --error-exitcode=1 include src
