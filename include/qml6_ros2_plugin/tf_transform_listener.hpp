@@ -90,6 +90,23 @@ public:
                                const QString &source_frame, const rclcpp::Time &source_time,
                                const QString &fixed_frame, double timeout = 0 ) const;
 
+  /**
+   * @brief Returns the authority (node name) that provided the latest transform for the given frame.
+   *
+   * @param frame_id The frame ID to look up.
+   * @return The node name of the authority, or an empty string if not found.
+   */
+  QString getFrameAuthority( const QString &frame_id ) const;
+
+  //! @copydoc TfBuffer::getFrame
+  QVariant getFrame( const QString &frame_id ) const;
+
+  //! @copydoc TfBuffer::getAllFrames
+  QVariantList getAllFrames() const;
+
+  //! @copydoc TfBuffer::getTransformAge
+  double getTransformAge( const QString &frame_id ) const;
+
   tf2_ros::Buffer *buffer();
 
   void registerWrapper();
@@ -162,6 +179,18 @@ public:
   Q_INVOKABLE QVariantMap lookUpTransform( const QString &target_frame, const Time &target_time,
                                            const QString &source_frame, const Time &source_time,
                                            const QString &fixed_frame, double timeout = 0 );
+
+  //! @copydoc TfTransformListener::getFrameAuthority(const QString &) const
+  Q_INVOKABLE QString getFrameAuthority( const QString &frame_id ) const;
+
+  //! @copydoc TfBuffer::getFrame
+  Q_INVOKABLE QVariant getFrame( const QString &frame_id ) const;
+
+  //! @copydoc TfBuffer::getAllFrames
+  Q_INVOKABLE QVariantList getAllFrames() const;
+
+  //! @copydoc TfBuffer::getTransformAge
+  Q_INVOKABLE double getTransformAge( const QString &frame_id ) const;
 };
 } // namespace qml6_ros2_plugin
 

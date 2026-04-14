@@ -73,6 +73,7 @@ TEST( Ros2LifeCycle, testLifeCycle )
     EXPECT_TRUE( ros_wrapper.isInitialized() );
     EXPECT_TRUE( Ros2Qml::getInstance().isInitialized() );
     EXPECT_TRUE( ros_wrapper.ok() );
+    QCoreApplication::processEvents();
     EXPECT_EQ( tf_wrapper.lookUpTransform( "frame2", "frame1" )["exception"].toString(),
                QString( "LookupException" ) );
     EXPECT_TRUE( qml6_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
@@ -98,5 +99,7 @@ int main( int argc, char **argv )
   testing::InitGoogleTest( &argc, argv );
   QCoreApplication app( argc, argv );
   rclcpp::init( argc, argv );
-  return RUN_ALL_TESTS();
+  int ret = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return ret;
 }

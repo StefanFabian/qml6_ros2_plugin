@@ -844,6 +844,7 @@ int main( int argc, char **argv )
   int result = RUN_ALL_TESTS();
   node.reset();
   wrapper.shutdown();
+  rclcpp::shutdown();
   return result;
 }
 

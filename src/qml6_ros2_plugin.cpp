@@ -13,6 +13,8 @@
 #include "qml6_ros2_plugin/ros2.hpp"
 #include "qml6_ros2_plugin/service_client.hpp"
 #include "qml6_ros2_plugin/subscription.hpp"
+#include "qml6_ros2_plugin/tf_buffer.hpp"
+#include "qml6_ros2_plugin/tf_frame_info.hpp"
 #include "qml6_ros2_plugin/tf_transform.hpp"
 #include "qml6_ros2_plugin/tf_transform_listener.hpp"
 #include "qml6_ros2_plugin/time.hpp"
@@ -71,6 +73,7 @@ public:
           Q_UNUSED( scriptEngine );
           return new TfTransformListenerWrapper;
         } );
+    qmlRegisterType<TfBuffer>( "Ros2", 1, 0, "TfBuffer" );
     qmlRegisterType<TfTransform>( "Ros2", 1, 0, "TfTransform" );
 
     // Image transport
