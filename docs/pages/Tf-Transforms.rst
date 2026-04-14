@@ -54,10 +54,110 @@ Be aware that in JavaScript durations are given in milliseconds.
   a ``string`` error message. You should explicitly test for that since strings
   are truthy, too.
 
+Namespaced
+----------
+The global ``TfTransformListener`` singleton follows the design of ``tf2_ros::TransformListener``
+and therefore always subscribes to ``/tf`` and ``/tf_static``. For multi-robot
+setups where each robot publishes its own tf tree under a namespace
+(``<namespace>/tf`` and ``<namespace>/tf_static``), use the ``TfBuffer``
+component. Each instance owns its own tf buffer fed from the topics under the
+configured namespace and exposes the same ``canTransform`` / ``lookUpTransform``
+API as the singleton.
+
+.. code-block:: qml
+
+  TfBuffer {
+    id: robot1Buffer
+    ns: "/robot1" // subscribes to /robot1/tf and /robot1/tf_static
+  }
+
+  TfBuffer {
+    id: robot2Buffer
+    ns: "/robot2" // subscribes to /robot2/tf and /robot2/tf_static
+  }
+
+  TfTransform {
+    buffer: robot1Buffer
+    sourceFrame: "base_link"
+    targetFrame: "map"
+  }
+
+An empty ``ns`` (the default) subscribes to ``/tf`` and ``/tf_static``
+and therefore behaves like the global singleton path.
+
+Passing an instance to a ``TfTransform`` via its ``buffer`` property sources
+transforms from that buffer instead of the global singleton. Leaving ``buffer``
+unset (the default) keeps the existing behavior of using the global
+``TfTransformListener``.
+
+The same ``lookUpTransform`` / ``canTransform`` methods that are available on
+the ``TfTransformListener`` singleton can also be called directly on a
+``TfBuffer`` instance.
+Additionally, you can query the authority that provided the transform for a
+frame using ``getFrameAuthority(frame_id)``.
+
+Frame Queries
+-------------
+Both the ``TfTransformListener`` singleton and ``TfBuffer`` instances expose
+methods for querying individual frames or the entire frame tree. Each frame is
+represented by a ``TfFrameInfo`` value object with the following properties:
+
+- ``frameId`` — the frame ID string
+- ``parentId`` — the parent frame ID (empty for root frames)
+- ``authority`` — the node name that publishes the transform for this frame
+- ``translation`` — a map ``{x, y, z}`` of the translation from parent to frame
+- ``rotation`` — a quaternion map ``{w, x, y, z}`` from parent to frame
+- ``isStatic`` — ``true`` if the transform was received on ``/tf_static``
+- ``children`` — a list of direct child frame IDs
+- ``frequency`` — the publishing rate in Hz (computed over a 5-second window)
+
+.. code-block:: qml
+
+  // Query a single frame
+  var frame = TfTransformListener.getFrame("base_link")
+  if (frame) {
+      console.log("Parent:", frame.parentId)
+      console.log("Authority:", frame.authority)
+      console.log("Frequency:", frame.frequency.toFixed(1), "Hz")
+      console.log("Children:", frame.children)
+  }
+
+  // Enumerate all frames
+  var allFrames = TfTransformListener.getAllFrames()
+  for (var i = 0; i < allFrames.length; ++i) {
+      var f = allFrames[i]
+      console.log(f.frameId, "->", f.parentId)
+  }
+
+  // Get the age of a transform in seconds
+  var age = TfTransformListener.getTransformAge("base_link")
+  if (age >= 0)
+      console.log("Transform age:", age.toFixed(3), "s")
+
+The same methods are available on ``TfBuffer`` instances:
+
+.. code-block:: qml
+
+  TfBuffer {
+      id: robotBuffer
+      ns: "/robot1"
+  }
+
+  // ...
+  var frame = robotBuffer.getFrame("base_link")
+  var all = robotBuffer.getAllFrames()
+  var age = robotBuffer.getTransformAge("base_link")
+
 API
 ---
 
 .. doxygenclass:: qml6_ros2_plugin::TfTransformListenerWrapper
+  :members:
+
+.. doxygenclass:: qml6_ros2_plugin::TfBuffer
+  :members:
+
+.. doxygenclass:: qml6_ros2_plugin::TfFrameInfo
   :members:
 
 .. doxygenclass:: qml6_ros2_plugin::TfTransform

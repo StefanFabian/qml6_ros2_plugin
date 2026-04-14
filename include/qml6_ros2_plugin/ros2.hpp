@@ -163,6 +163,8 @@ public:
 
   std::shared_ptr<rclcpp::Node> node();
 
+  std::shared_ptr<rclcpp::Context> context() const;
+
 signals:
 
   //! Emitted once when ROS was initialized.
