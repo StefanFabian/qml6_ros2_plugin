@@ -75,6 +75,9 @@ public:
         } );
     qmlRegisterType<TfBuffer>( "Ros2", 1, 0, "TfBuffer" );
     qmlRegisterType<TfTransform>( "Ros2", 1, 0, "TfTransform" );
+    qmlRegisterUncreatableType<TfFrameInfo>(
+        "Ros2", 1, 0, "TfFrameInfo",
+        "Error: TfFrameInfo is a value type that can only be created by the TfBuffer class." );
 
     // Image transport
     qmlRegisterType<ImageTransportSubscription>( "Ros2", 1, 0, "ImageTransportSubscription" );

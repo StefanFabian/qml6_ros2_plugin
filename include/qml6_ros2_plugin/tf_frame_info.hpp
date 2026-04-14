@@ -8,7 +8,6 @@
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
-#include <QtQmlIntegration/qqmlintegration.h>
 
 namespace qml6_ros2_plugin
 {
@@ -16,8 +15,6 @@ namespace qml6_ros2_plugin
 class TfFrameInfo
 {
   Q_GADGET
-  QML_VALUE_TYPE( tfframeinfo )
-  QML_UNCREATABLE( "TfFrameInfo is a value type that can only be created by the TfBuffer class." )
 
   //! The frame ID of this frame.
   Q_PROPERTY( QString frameId READ frameId )

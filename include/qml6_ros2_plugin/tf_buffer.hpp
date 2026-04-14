@@ -11,7 +11,6 @@
 #include <QPointer>
 #include <QVariant>
 #include <QVariantMap>
-#include <QtQmlIntegration/qqmlintegration.h>
 #include <array>
 #include <chrono>
 #include <condition_variable>
@@ -46,7 +45,6 @@ class TfFrameInfo;
 class TfBuffer : public QObjectRos2
 {
   Q_OBJECT
-  QML_ELEMENT
   //! The ROS2 namespace whose /tf and /tf_static topics this buffer subscribes to.
   //! An empty namespace (default) subscribes to /tf and /tf_static, equivalent to the global
   //! TfTransformListener.
