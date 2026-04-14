@@ -5,13 +5,15 @@
 #define QML_ROS2_PLUGIN_TF_TRANSFORM_HPP
 
 #include <QObject>
+#include <QPointer>
 #include <QTimer>
 #include <QVariantMap>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <memory>
 
 namespace qml6_ros2_plugin
 {
+class TfBuffer;
+
 /*!
  * Represents a tf transform between source and target frame.
  */
@@ -45,6 +47,11 @@ class TfTransform : public QObject
 
   //! Whether the current transform, i.e., the fields message, translation and rotation are valid.
   Q_PROPERTY( bool valid READ valid NOTIFY validChanged )
+
+  //! Optional TfBuffer instance providing the tf buffer. If unset (default), the global
+  //! TfTransformListener singleton is used. When set, transforms are sourced from the given
+  //! buffer, allowing TfTransform to follow a namespaced tf tree.
+  Q_PROPERTY( qml6_ros2_plugin::TfBuffer *buffer READ buffer WRITE setBuffer NOTIFY bufferChanged )
 public:
   TfTransform();
 
@@ -74,6 +81,10 @@ public:
 
   bool valid();
 
+  TfBuffer *buffer() const;
+
+  void setBuffer( TfBuffer *value );
+
 signals:
 
   void sourceFrameChanged();
@@ -92,6 +103,8 @@ signals:
 
   void validChanged();
 
+  void bufferChanged();
+
 protected slots:
 
   void updateMessage();
@@ -107,8 +120,10 @@ protected:
   QString target_frame_;
   geometry_msgs::msg::TransformStamped last_transform_;
   std::chrono::milliseconds update_interval_;
-  bool subscribed_;
-  bool enabled_;
+  QPointer<TfBuffer> buffer_;
+  bool subscribed_ = false;
+  bool enabled_ = true;
+  bool using_singleton_ = false;
 };
 } // namespace qml6_ros2_plugin
 
