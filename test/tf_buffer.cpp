@@ -47,6 +47,7 @@ public:
 
 static rclcpp::Node::SharedPtr main_node;
 static rclcpp::executors::SingleThreadedExecutor::SharedPtr executor;
+static rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr tf_pub;
 
 static void processEvents()
 {
@@ -65,6 +66,13 @@ static bool waitFor( const std::function<bool()> &pred, std::chrono::millisecond
     std::this_thread::sleep_for( 1ms );
   }
   return false;
+}
+
+template<typename PublisherT>
+static bool waitForSubscriptionCount( const std::shared_ptr<PublisherT> &pub, size_t count,
+                                      std::chrono::milliseconds timeout = 2s )
+{
+  return waitFor( [&]() { return pub && pub->get_subscription_count() >= count; }, timeout );
 }
 
 TEST( TfBuffer, namespaceValidation )
@@ -219,7 +227,9 @@ TEST( TfBuffer, authorityAndCache )
   ASSERT_TRUE( waitFor( [&]() { return buffer.isRosInitialized(); } ) );
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 2, 5s ) )
+      << "Shared /tf publisher is missing the per-test TfBuffer subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "world";
@@ -232,7 +242,7 @@ TEST( TfBuffer, authorityAndCache )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return TfBufferTest::getCacheSize( buffer ) >= 1;
       },
       10s ) )
@@ -249,7 +259,9 @@ TEST( TfBuffer, getFrameAuthority )
   ASSERT_TRUE( waitFor( [&]() { return buffer.isRosInitialized(); } ) );
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 2, 5s ) )
+      << "Shared /tf publisher is missing the per-test TfBuffer subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "world";
@@ -262,7 +274,7 @@ TEST( TfBuffer, getFrameAuthority )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return !buffer.getFrameAuthority( "test_frame_auth" ).isEmpty();
       },
       10s ) )
@@ -279,7 +291,9 @@ TEST( TfBuffer, singletonAuthority )
   processEvents();
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 1, 5s ) )
+      << "Shared /tf publisher has no singleton listener subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "world";
@@ -292,7 +306,7 @@ TEST( TfBuffer, singletonAuthority )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return !listener.getFrameAuthority( "test_frame_singleton" ).isEmpty();
       },
       10s ) )
@@ -312,7 +326,9 @@ TEST( TfBuffer, getFrame )
   EXPECT_FALSE( unknown.isValid() );
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 2, 5s ) )
+      << "Shared /tf publisher is missing the per-test TfBuffer subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "map";
@@ -327,7 +343,7 @@ TEST( TfBuffer, getFrame )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return buffer.getFrame( "gf_base" ).isValid();
       },
       10s ) )
@@ -398,7 +414,9 @@ TEST( TfBuffer, getTransformAge )
   EXPECT_DOUBLE_EQ( buffer.getTransformAge( "nonexistent" ), -1.0 );
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 2, 5s ) )
+      << "Shared /tf publisher is missing the per-test TfBuffer subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "age_parent";
@@ -410,7 +428,7 @@ TEST( TfBuffer, getTransformAge )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return buffer.getTransformAge( "age_child" ) >= 0.0;
       },
       10s ) )
@@ -491,7 +509,9 @@ TEST( TfBuffer, singletonGetFrame )
   processEvents();
 
   auto node = Ros2Qml::getInstance().node();
-  auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  ASSERT_TRUE( tf_pub ) << "Shared /tf publisher was not initialized";
+  ASSERT_TRUE( waitForSubscriptionCount( tf_pub, 1, 5s ) )
+      << "Shared /tf publisher has no singleton listener subscriber";
 
   geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "sgf_world";
@@ -504,7 +524,7 @@ TEST( TfBuffer, singletonGetFrame )
   ASSERT_TRUE( waitFor(
       [&]() {
         for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-        pub->publish( msg );
+        tf_pub->publish( msg );
         return listener.getFrame( "sgf_base" ).isValid();
       },
       10s ) )
@@ -543,9 +563,13 @@ int main( int argc, char **argv )
 
   Ros2QmlSingletonWrapper wrapper;
   wrapper.init( "test_tf_buffer_qml" );
+  tf_pub = Ros2Qml::getInstance().node()->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
+  TfTransformListener::getInstance().registerWrapper();
 
   int result = RUN_ALL_TESTS();
 
+  TfTransformListener::getInstance().unregisterWrapper();
+  tf_pub.reset();
   wrapper.shutdown();
   if ( executor && main_node )
     executor->remove_node( main_node );
