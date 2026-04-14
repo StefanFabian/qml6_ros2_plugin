@@ -3,6 +3,7 @@
 
 #include "qml6_ros2_plugin/tf_transform.hpp"
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/tf_buffer.hpp"
 #include "qml6_ros2_plugin/tf_transform_listener.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -12,7 +13,7 @@ using namespace qml6_ros2_plugin::conversion;
 namespace qml6_ros2_plugin
 {
 
-TfTransform::TfTransform() : update_interval_( 1000 / 60 ), subscribed_( false ), enabled_( true )
+TfTransform::TfTransform() : update_interval_( 1000 / 60 )
 {
   geometry_msgs::msg::TransformStamped transform;
   message_ = msgToMap( transform );
@@ -92,19 +93,36 @@ QVariant TfTransform::translation()
 {
   if ( !message_.contains( "transform" ) )
     return {};
-  const QVariantMap &transform = *static_cast<const QVariantMap *>( message_["transform"].data() );
-  return transform.find( "translation" ).value();
+  const QVariantMap transform = message_.value( "transform" ).toMap();
+  return transform.value( "translation" );
 }
 
 QVariant TfTransform::rotation()
 {
   if ( !message_.contains( "transform" ) )
     return {};
-  const QVariantMap &transform = *static_cast<const QVariantMap *>( message_["transform"].data() );
-  return transform.find( "rotation" ).value();
+  const QVariantMap transform = message_.value( "transform" ).toMap();
+  return transform.value( "rotation" );
 }
 
 bool TfTransform::valid() { return message_.contains( "valid" ) && message_["valid"].toBool(); }
+
+TfBuffer *TfTransform::buffer() const { return buffer_.data(); }
+
+void TfTransform::setBuffer( TfBuffer *value )
+{
+  if ( buffer_.data() == value )
+    return;
+  const bool was_subscribed = subscribed_;
+  if ( was_subscribed )
+    shutdown();
+  buffer_ = value;
+  emit bufferChanged();
+  if ( was_subscribed )
+    subscribe();
+  // Publish a fresh state (either from the new buffer or an empty one).
+  updateMessage();
+}
 
 void TfTransform::subscribe()
 {
@@ -112,7 +130,12 @@ void TfTransform::subscribe()
     return;
   subscribed_ = true;
 
-  TfTransformListener::getInstance().registerWrapper();
+  if ( !buffer_ ) {
+    TfTransformListener::getInstance().registerWrapper();
+    using_singleton_ = true;
+  } else {
+    using_singleton_ = false;
+  }
   if ( update_interval_.count() > 0 )
     update_timer_.start();
   // Load transform
@@ -125,7 +148,10 @@ void TfTransform::shutdown()
     return;
   subscribed_ = false;
   update_timer_.stop();
-  TfTransformListener::getInstance().unregisterWrapper();
+  if ( using_singleton_ ) {
+    TfTransformListener::getInstance().unregisterWrapper();
+    using_singleton_ = false;
+  }
 }
 
 namespace
@@ -146,12 +172,27 @@ bool isDifferent( const geometry_msgs::msg::TransformStamped &new_transform,
 void TfTransform::updateMessage()
 {
   bool was_valid = valid();
-  if ( TfTransformListener::getInstance().buffer() == nullptr )
+  tf2_ros::Buffer *buf = !using_singleton_ ? ( buffer_ ? buffer_->buffer() : nullptr )
+                                           : TfTransformListener::getInstance().buffer();
+  if ( buf == nullptr ) {
+    if ( using_singleton_ )
+      return;
+    QVariantMap result = msgToMap( geometry_msgs::msg::TransformStamped{} );
+    result.insert( "valid", false );
+    result.insert( "exception", "Uninitialized" );
+    result.insert( "message", "Ros2 is not yet initialized or assigned TfBuffer was destroyed." );
+    if ( message_ == result )
+      return;
+    message_ = result;
+    if ( was_valid )
+      emit validChanged();
+    emit messageChanged();
     return;
+  }
 
   try {
-    const auto &transform = TfTransformListener::getInstance().buffer()->lookupTransform(
-        target_frame_.toStdString(), source_frame_.toStdString(), tf2::TimePointZero );
+    const auto &transform = buf->lookupTransform( target_frame_.toStdString(),
+                                                  source_frame_.toStdString(), tf2::TimePointZero );
     if ( !isDifferent( transform, last_transform_ ) )
       return;
     last_transform_ = transform;

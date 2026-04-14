@@ -356,6 +356,8 @@ QVariant Ros2Qml::createEmptyActionGoal( const QString &datatype ) const
 
 std::shared_ptr<rclcpp::Node> Ros2Qml::node() { return node_; }
 
+std::shared_ptr<rclcpp::Context> Ros2Qml::context() const { return context_; }
+
 /***************************************************************************************************/
 /************************************* Ros2QmlSingletonWrapper **************************************/
 /***************************************************************************************************/
