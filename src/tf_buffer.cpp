@@ -28,6 +28,29 @@ TfBuffer::TfBuffer( QObject *parent ) : QObjectRos2( parent ) { }
 
 TfBuffer::~TfBuffer() = default;
 
+TfBuffer::CallbackActivityGuard::CallbackActivityGuard( TfBuffer *buffer )
+    : buffer_( buffer ), active_( false )
+{
+  if ( buffer_ == nullptr )
+    return;
+  std::lock_guard<std::mutex> lock( buffer_->callback_state_mutex_ );
+  if ( !buffer_->accepting_callbacks_ )
+    return;
+  ++buffer_->active_callback_count_;
+  active_ = true;
+}
+
+TfBuffer::CallbackActivityGuard::~CallbackActivityGuard()
+{
+  if ( !active_ || buffer_ == nullptr )
+    return;
+  std::lock_guard<std::mutex> lock( buffer_->callback_state_mutex_ );
+  --buffer_->active_callback_count_;
+  buffer_->callback_state_cv_.notify_all();
+}
+
+bool TfBuffer::CallbackActivityGuard::active() const { return active_; }
+
 QString TfBuffer::ns() const { return namespace_; }
 
 void TfBuffer::setNs( const QString &ns )
@@ -98,26 +121,43 @@ void TfBuffer::subscribeTopics()
   const rclcpp::QoS tf_static_qos = tf2_ros::StaticListenerQoS();
 
   rclcpp::SubscriptionOptions opts;
+  QPointer<TfBuffer> self( this );
+  {
+    std::lock_guard<std::mutex> lock( callback_state_mutex_ );
+    accepting_callbacks_ = true;
+  }
   tf_sub_ = node->create_subscription<tf2_msgs::msg::TFMessage>(
       tf_topic_, tf_qos,
-      [this]( tf2_msgs::msg::TFMessage::ConstSharedPtr msg, const rclcpp::MessageInfo &info ) {
-        tfCallback( msg, info, false );
+      [self]( tf2_msgs::msg::TFMessage::ConstSharedPtr msg, const rclcpp::MessageInfo &info ) {
+        if ( self.isNull() )
+          return;
+        self->tfCallback( msg, info, false );
       },
       opts );
   tf_static_sub_ = node->create_subscription<tf2_msgs::msg::TFMessage>(
       tf_static_topic_, tf_static_qos,
-      [this]( tf2_msgs::msg::TFMessage::ConstSharedPtr msg, const rclcpp::MessageInfo &info ) {
-        tfCallback( msg, info, true );
+      [self]( tf2_msgs::msg::TFMessage::ConstSharedPtr msg, const rclcpp::MessageInfo &info ) {
+        if ( self.isNull() )
+          return;
+        self->tfCallback( msg, info, true );
       },
       opts );
 }
 
 void TfBuffer::unsubscribeTopics()
 {
-  std::lock_guard<std::mutex> lock( gid_cache_mutex_ );
-  std::lock_guard<std::mutex> lock_auth( authority_mutex_ );
+  {
+    std::unique_lock<std::mutex> lock( callback_state_mutex_ );
+    accepting_callbacks_ = false;
+  }
   tf_sub_.reset();
   tf_static_sub_.reset();
+  {
+    std::unique_lock<std::mutex> lock( callback_state_mutex_ );
+    callback_state_cv_.wait( lock, [this]() { return active_callback_count_ == 0; } );
+  }
+  std::lock_guard<std::mutex> lock( gid_cache_mutex_ );
+  std::lock_guard<std::mutex> lock_auth( authority_mutex_ );
   gid_cache_.clear();
   frame_states_.clear();
 }
@@ -125,6 +165,9 @@ void TfBuffer::unsubscribeTopics()
 void TfBuffer::tfCallback( tf2_msgs::msg::TFMessage::ConstSharedPtr msg,
                            const rclcpp::MessageInfo &info, bool is_static )
 {
+  CallbackActivityGuard callback_guard( this );
+  if ( !callback_guard.active() )
+    return;
   if ( !buffer_ )
     return;
   std::array<uint8_t, RMW_GID_STORAGE_SIZE> gid{};
@@ -133,34 +176,39 @@ void TfBuffer::tfCallback( tf2_msgs::msg::TFMessage::ConstSharedPtr msg,
   {
     std::lock_guard<std::mutex> lock( authority_mutex_ );
     for ( const auto &t : msg->transforms ) {
-      auto &state = frame_states_[t.child_frame_id];
-      if ( state.frame_id.empty() )
-        state.frame_id = t.child_frame_id;
+      const std::string child_frame_id = t.child_frame_id;
+      const std::string parent_frame_id = t.header.frame_id;
+
+      auto [state_it, inserted] = frame_states_.try_emplace( child_frame_id );
+      if ( inserted || state_it->second.frame_id.empty() )
+        state_it->second.frame_id = child_frame_id;
       // Update parent and children bookkeeping.
-      const std::string &new_parent = t.header.frame_id;
-      if ( state.parent_id != new_parent ) {
+      if ( state_it->second.parent_id != parent_frame_id ) {
         // Remove from old parent's children.
-        if ( !state.parent_id.empty() ) {
-          auto old_it = frame_states_.find( state.parent_id );
+        if ( !state_it->second.parent_id.empty() ) {
+          auto old_it = frame_states_.find( state_it->second.parent_id );
           if ( old_it != frame_states_.end() ) {
             auto &oc = old_it->second.children;
-            oc.erase( std::remove( oc.begin(), oc.end(), t.child_frame_id ), oc.end() );
+            oc.erase( std::remove( oc.begin(), oc.end(), child_frame_id ), oc.end() );
           }
         }
-        state.parent_id = new_parent;
+        auto [parent_it, parent_inserted] = frame_states_.try_emplace( parent_frame_id );
+        if ( parent_inserted || parent_it->second.frame_id.empty() )
+          parent_it->second.frame_id = parent_frame_id;
+
+        state_it = frame_states_.find( child_frame_id );
+        state_it->second.parent_id = parent_frame_id;
         // Add to new parent's children.
-        auto &parent_state = frame_states_[new_parent];
-        if ( parent_state.frame_id.empty() )
-          parent_state.frame_id = new_parent;
-        auto &pc = parent_state.children;
-        if ( std::find( pc.begin(), pc.end(), t.child_frame_id ) == pc.end() )
-          pc.push_back( t.child_frame_id );
+        auto &pc = parent_it->second.children;
+        if ( std::find( pc.begin(), pc.end(), child_frame_id ) == pc.end() )
+          pc.push_back( child_frame_id );
       }
-      state.authority = authority;
-      state.is_static = is_static;
-      state.transform = t.transform;
-      state.last_stamp = rclcpp::Time( t.header.stamp );
+      state_it->second.authority = authority;
+      state_it->second.is_static = is_static;
+      state_it->second.transform = t.transform;
+      state_it->second.last_stamp = rclcpp::Time( t.header.stamp );
       // Frequency ring buffer update.
+      auto &state = state_it->second;
       state.recent_timestamps[state.ts_head] = std::chrono::steady_clock::now();
       if ( ++state.ts_head == kFrequencyRingSize )
         state.ts_head = 0;

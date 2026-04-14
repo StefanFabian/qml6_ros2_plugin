@@ -8,11 +8,13 @@
 #include "qml6_ros2_plugin/time.hpp"
 
 #include <QDateTime>
+#include <QPointer>
 #include <QVariant>
 #include <QVariantMap>
 #include <QtQmlIntegration/qqmlintegration.h>
 #include <array>
 #include <chrono>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -22,7 +24,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
-#include <tf2_ros/buffer.h>
+#include <tf2_ros/buffer.hpp>
 
 namespace qml6_ros2_plugin
 {
@@ -167,6 +169,20 @@ protected:
 private:
   static constexpr std::size_t kFrequencyRingSize = 30;
 
+  class CallbackActivityGuard
+  {
+  public:
+    explicit CallbackActivityGuard( TfBuffer *buffer );
+
+    ~CallbackActivityGuard();
+
+    bool active() const;
+
+  private:
+    TfBuffer *buffer_;
+    bool active_;
+  };
+
   struct GidCacheEntry {
     std::array<uint8_t, RMW_GID_STORAGE_SIZE> gid{};
     std::string authority;
@@ -215,6 +231,10 @@ private:
   std::string tf_static_topic_;
   std::unordered_map<std::string, FrameState> frame_states_;
   mutable std::mutex authority_mutex_;
+  mutable std::mutex callback_state_mutex_;
+  std::condition_variable callback_state_cv_;
+  bool accepting_callbacks_ = false;
+  std::size_t active_callback_count_ = 0;
 
   friend class TfBufferTest;
 };

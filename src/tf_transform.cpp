@@ -93,16 +93,16 @@ QVariant TfTransform::translation()
 {
   if ( !message_.contains( "transform" ) )
     return {};
-  const QVariantMap &transform = *static_cast<const QVariantMap *>( message_["transform"].data() );
-  return transform.find( "translation" ).value();
+  const QVariantMap transform = message_.value( "transform" ).toMap();
+  return transform.value( "translation" );
 }
 
 QVariant TfTransform::rotation()
 {
   if ( !message_.contains( "transform" ) )
     return {};
-  const QVariantMap &transform = *static_cast<const QVariantMap *>( message_["transform"].data() );
-  return transform.find( "rotation" ).value();
+  const QVariantMap transform = message_.value( "transform" ).toMap();
+  return transform.value( "rotation" );
 }
 
 bool TfTransform::valid() { return message_.contains( "valid" ) && message_["valid"].toBool(); }

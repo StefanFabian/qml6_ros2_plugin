@@ -10,8 +10,8 @@
 #include <qml6_ros2_plugin/tf_transform.hpp>
 #include <qml6_ros2_plugin/tf_transform_listener.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.hpp>
+#include <tf2_ros/transform_broadcaster.hpp>
 
 using namespace qml6_ros2_plugin;
 using namespace std::chrono_literals;
@@ -26,16 +26,33 @@ public:
     std::lock_guard<std::mutex> lock( buffer.gid_cache_mutex_ );
     return buffer.gid_cache_.size();
   }
+
+  static void fillCachePastLimit( TfBuffer &buffer, size_t count )
+  {
+    std::lock_guard<std::mutex> lock( buffer.gid_cache_mutex_ );
+    const auto now = std::chrono::steady_clock::now();
+    buffer.gid_cache_.clear();
+    for ( size_t i = 0; i < count; ++i ) {
+      TfBuffer::GidCacheEntry entry;
+      entry.gid.fill( 0 );
+      entry.gid[i % RMW_GID_STORAGE_SIZE] = static_cast<uint8_t>( i + 1 );
+      entry.authority = "/fake_authority_" + std::to_string( i );
+      entry.last_seen = now + std::chrono::milliseconds( static_cast<int>( i ) );
+      buffer.gid_cache_.push_back( std::move( entry ) );
+    }
+    buffer.evictCacheIfNeeded();
+  }
 };
 } // namespace qml6_ros2_plugin
 
 static rclcpp::Node::SharedPtr main_node;
+static rclcpp::executors::SingleThreadedExecutor::SharedPtr executor;
 
 static void processEvents()
 {
   QCoreApplication::processEvents();
-  if ( main_node )
-    rclcpp::spin_some( main_node );
+  if ( executor )
+    executor->spin_some();
 }
 
 static bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeout = 2s )
@@ -222,26 +239,8 @@ TEST( TfBuffer, authorityAndCache )
       << "Failed to receive message for authority test";
 
   // 2. Cache Eviction test
-  std::vector<rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr> publishers;
-  for ( int i = 0; i < 40; ++i ) {
-    rclcpp::NodeOptions opts;
-    opts.context( Ros2Qml::getInstance().context() );
-    auto n = rclcpp::Node::make_shared( "extra_node_" + std::to_string( i ), "", opts );
-    publishers.push_back( n->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 ) );
-  }
-
-  ASSERT_TRUE( waitFor(
-      [&]() {
-        for ( auto &p : publishers ) {
-          for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
-          p->publish( msg );
-        }
-        return TfBufferTest::getCacheSize( buffer ) >= 30;
-      },
-      15s ) )
-      << "Cache failed to reach threshold. Size: " << TfBufferTest::getCacheSize( buffer );
-
-  EXPECT_LE( TfBufferTest::getCacheSize( buffer ), 31u );
+  TfBufferTest::fillCachePastLimit( buffer, 40 );
+  EXPECT_LE( TfBufferTest::getCacheSize( buffer ), 30u );
 }
 
 TEST( TfBuffer, getFrameAuthority )
@@ -277,6 +276,7 @@ TEST( TfBuffer, singletonAuthority )
 {
   TfTransformListenerWrapper listener;
   listener.initialize();
+  processEvents();
 
   auto node = Ros2Qml::getInstance().node();
   auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
@@ -488,6 +488,7 @@ TEST( TfBuffer, singletonGetFrame )
 {
   TfTransformListenerWrapper listener;
   listener.initialize();
+  processEvents();
 
   auto node = Ros2Qml::getInstance().node();
   auto pub = node->create_publisher<tf2_msgs::msg::TFMessage>( "/tf", 10 );
@@ -537,6 +538,8 @@ int main( int argc, char **argv )
   QCoreApplication app( argc, argv );
   rclcpp::init( argc, argv );
   main_node = rclcpp::Node::make_shared( "test_tf_buffer_node" );
+  executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor->add_node( main_node );
 
   Ros2QmlSingletonWrapper wrapper;
   wrapper.init( "test_tf_buffer_qml" );
@@ -544,6 +547,9 @@ int main( int argc, char **argv )
   int result = RUN_ALL_TESTS();
 
   wrapper.shutdown();
+  if ( executor && main_node )
+    executor->remove_node( main_node );
+  executor.reset();
   main_node.reset();
   rclcpp::shutdown();
   return result;
