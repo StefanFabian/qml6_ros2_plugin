@@ -6,10 +6,10 @@
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 #include "qml6_ros2_plugin/conversion/qml_ros_conversion.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
+#include "qml6_ros2_plugin/tf_buffer.hpp"
 
 #include <QVariantMap>
 #include <memory>
-#include <tf2_ros/transform_listener.hpp>
 
 using namespace qml6_ros2_plugin::conversion;
 
@@ -17,14 +17,9 @@ namespace qml6_ros2_plugin
 {
 
 struct TfTransformListener::State {
-  explicit State( rclcpp::Node::SharedPtr node )
-      : buffer( node->get_clock() ), listener( buffer, node.get(), false )
-  {
-    buffer.setUsingDedicatedThread( true );
-  }
+  State() : buffer( std::make_unique<TfBuffer>() ) { }
 
-  tf2_ros::Buffer buffer;
-  tf2_ros::TransformListener listener;
+  std::unique_ptr<TfBuffer> buffer;
 };
 
 TfTransformListener &TfTransformListener::getInstance()
@@ -49,33 +44,18 @@ bool TfTransformListener::initialize()
     connect( &Ros2Qml::getInstance(), &Ros2Qml::initialized, this, &TfTransformListener::initialize );
     return true;
   }
-  Ros2Qml::getInstance().registerDependant();
-  state_ = std::make_unique<State>( Ros2Qml::getInstance().node() );
+  // The inner TfBuffer is a QObjectRos2 and registers itself as a Ros2Qml dependant for the
+  // executor lifetime.
+  state_ = std::make_unique<State>();
   return true;
 }
 
 QVariant TfTransformListener::canTransform( const QString &target_frame, const QString &source_frame,
                                             const rclcpp::Time &time, double timeout ) const
 {
-  if ( !isInitialized() )
-    return QString( "Uninitialized" );
   if ( state_ == nullptr )
-    return QString( "Invalid state" );
-  std::string error;
-  bool result;
-  if ( timeout <= 0.0000001 ) {
-    using namespace std::chrono_literals;
-    result = state_->buffer.canTransform( target_frame.toStdString(), source_frame.toStdString(),
-                                          time, rclcpp::Duration( 0ns ), &error );
-  } else {
-    result = state_->buffer.canTransform( target_frame.toStdString(), source_frame.toStdString(),
-                                          time, qmlToRos2Duration( timeout ), &error );
-  }
-  if ( result )
-    return true;
-  if ( error.empty() )
-    return false;
-  return QString::fromStdString( error );
+    return QString( "Uninitialized" );
+  return state_->buffer->canTransform( target_frame, source_frame, time, timeout );
 }
 
 QVariant TfTransformListener::canTransform( const QString &target_frame,
@@ -84,85 +64,24 @@ QVariant TfTransformListener::canTransform( const QString &target_frame,
                                             const rclcpp::Time &source_time,
                                             const QString &fixed_frame, double timeout ) const
 {
-  if ( !isInitialized() )
-    return QString( "Uninitialized" );
   if ( state_ == nullptr )
-    return QString( "Invalid state" );
-  std::string error;
-  bool result;
-  if ( timeout <= 0.0000001 ) {
-    using namespace std::chrono_literals;
-    result = state_->buffer.canTransform(
-        target_frame.toStdString(), target_time, source_frame.toStdString(), source_time,
-        fixed_frame.toStdString(), rclcpp::Duration( 0ns ), &error );
-  } else {
-    result = state_->buffer.canTransform(
-        target_frame.toStdString(), target_time, source_frame.toStdString(), source_time,
-        fixed_frame.toStdString(), qmlToRos2Duration( timeout ), &error );
-  }
-  if ( result )
-    return true;
-  if ( error.empty() )
-    return false;
-  return QString::fromStdString( error );
+    return QString( "Uninitialized" );
+  return state_->buffer->canTransform( target_frame, target_time, source_frame, source_time,
+                                       fixed_frame, timeout );
 }
 
 QVariantMap TfTransformListener::lookUpTransform( const QString &target_frame,
                                                   const QString &source_frame,
                                                   const rclcpp::Time &time, double timeout ) const
 {
-  geometry_msgs::msg::TransformStamped transform;
-  if ( !isInitialized() ) {
-    QVariantMap result = msgToMap( transform );
+  if ( state_ == nullptr ) {
+    QVariantMap result = msgToMap( geometry_msgs::msg::TransformStamped{} );
     result.insert( "valid", false );
     result.insert( "exception", "Uninitialized" );
     result.insert( "message", "ROS node is not yet initialized!" );
     return result;
   }
-  if ( state_ == nullptr ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "Invalid state" );
-    result.insert( "message", "TfTransformListener was not set up or already destructed!" );
-    return result;
-  }
-  try {
-    if ( timeout <= 1E-6 ) {
-      transform = state_->buffer.lookupTransform( target_frame.toStdString(),
-                                                  source_frame.toStdString(), time );
-    } else {
-      transform =
-          state_->buffer.lookupTransform( target_frame.toStdString(), source_frame.toStdString(),
-                                          time, qmlToRos2Duration( timeout ) );
-    }
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", true );
-    return result;
-  } catch ( tf2::LookupException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "LookupException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::ConnectivityException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "ConnectivityException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::ExtrapolationException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "ExtrapolationException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::InvalidArgumentException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "InvalidArgumentException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  }
+  return state_->buffer->lookUpTransform( target_frame, source_frame, time, timeout );
 }
 
 QVariantMap TfTransformListener::lookUpTransform( const QString &target_frame,
@@ -171,59 +90,43 @@ QVariantMap TfTransformListener::lookUpTransform( const QString &target_frame,
                                                   const rclcpp::Time &source_time,
                                                   const QString &fixed_frame, double timeout ) const
 {
-  geometry_msgs::msg::TransformStamped transform;
-  if ( !isInitialized() ) {
-    QVariantMap result = msgToMap( transform );
+  if ( state_ == nullptr ) {
+    QVariantMap result = msgToMap( geometry_msgs::msg::TransformStamped{} );
     result.insert( "valid", false );
     result.insert( "exception", "Uninitialized" );
     result.insert( "message", "ROS node is not yet initialized!" );
     return result;
   }
-  if ( state_ == nullptr ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "Invalid state" );
-    result.insert( "message", "TfTransformListener was not set up or already destructed!" );
-    return result;
-  }
-  try {
-    if ( timeout <= 0.0000001 ) {
-      transform = state_->buffer.lookupTransform( target_frame.toStdString(), target_time,
-                                                  source_frame.toStdString(), source_time,
-                                                  fixed_frame.toStdString() );
-    } else {
-      transform = state_->buffer.lookupTransform(
-          target_frame.toStdString(), target_time, source_frame.toStdString(), source_time,
-          fixed_frame.toStdString(), qmlToRos2Duration( timeout ) );
-    }
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", true );
-    return result;
-  } catch ( tf2::LookupException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "LookupException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::ConnectivityException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "ConnectivityException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::ExtrapolationException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "ExtrapolationException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  } catch ( tf2::InvalidArgumentException &ex ) {
-    QVariantMap result = msgToMap( transform );
-    result.insert( "valid", false );
-    result.insert( "exception", "InvalidArgumentException" );
-    result.insert( "message", QString( ex.what() ) );
-    return result;
-  }
+  return state_->buffer->lookUpTransform( target_frame, target_time, source_frame, source_time,
+                                          fixed_frame, timeout );
+}
+
+QString TfTransformListener::getFrameAuthority( const QString &frame_id ) const
+{
+  if ( state_ == nullptr )
+    return {};
+  return state_->buffer->getFrameAuthority( frame_id );
+}
+
+QVariant TfTransformListener::getFrame( const QString &frame_id ) const
+{
+  if ( state_ == nullptr )
+    return {};
+  return state_->buffer->getFrame( frame_id );
+}
+
+QVariantList TfTransformListener::getAllFrames() const
+{
+  if ( state_ == nullptr )
+    return {};
+  return state_->buffer->getAllFrames();
+}
+
+double TfTransformListener::getTransformAge( const QString &frame_id ) const
+{
+  if ( state_ == nullptr )
+    return -1.0;
+  return state_->buffer->getTransformAge( frame_id );
 }
 
 void TfTransformListener::registerWrapper()
@@ -236,8 +139,6 @@ void TfTransformListener::unregisterWrapper()
 {
   int count = --wrapper_count_;
   if ( count == 0 ) {
-    if ( state_ != nullptr )
-      Ros2Qml::getInstance().unregisterDependant();
     state_.reset();
   } else if ( count < 0 ) {
     QML_ROS2_PLUGIN_ERROR( "Unregister wrapper was called more often than registerWrapper for "
@@ -248,7 +149,7 @@ void TfTransformListener::unregisterWrapper()
 
 tf2_ros::Buffer *TfTransformListener::buffer()
 {
-  return state_ == nullptr ? nullptr : &state_->buffer;
+  return state_ == nullptr ? nullptr : state_->buffer->buffer();
 }
 
 TfTransformListenerWrapper::TfTransformListenerWrapper()
@@ -262,9 +163,7 @@ TfTransformListenerWrapper::~TfTransformListenerWrapper()
 }
 
 void TfTransformListenerWrapper::initialize()
-{
-  /* only serves to create wrapper which will init anyway. */
-}
+{ /* only serves to create wrapper which will init anyway. */ }
 
 QVariantMap TfTransformListenerWrapper::lookUpTransform( const QString &target_frame,
                                                          const QString &source_frame,
@@ -340,5 +239,25 @@ QVariant TfTransformListenerWrapper::canTransform( const QString &target_frame,
   return TfTransformListener::getInstance().canTransform( target_frame, target_time.getTime(),
                                                           source_frame, source_time.getTime(),
                                                           fixed_frame, timeout );
+}
+
+QString TfTransformListenerWrapper::getFrameAuthority( const QString &frame_id ) const
+{
+  return TfTransformListener::getInstance().getFrameAuthority( frame_id );
+}
+
+QVariant TfTransformListenerWrapper::getFrame( const QString &frame_id ) const
+{
+  return TfTransformListener::getInstance().getFrame( frame_id );
+}
+
+QVariantList TfTransformListenerWrapper::getAllFrames() const
+{
+  return TfTransformListener::getInstance().getAllFrames();
+}
+
+double TfTransformListenerWrapper::getTransformAge( const QString &frame_id ) const
+{
+  return TfTransformListener::getInstance().getTransformAge( frame_id );
 }
 } // namespace qml6_ros2_plugin
