@@ -36,10 +36,10 @@ class TfTransform : public QObject
   Q_PROPERTY( QVariantMap message READ message NOTIFY messageChanged )
 
   //! The translation part of the tf transform as a vector with x, y, z fields. Zero if no valid transform available (yet).
-  Q_PROPERTY( QVariant translation READ translation NOTIFY translationChanged )
+  Q_PROPERTY( QVariant translation READ translation NOTIFY messageChanged )
 
   //! The rotation part of the tf transform as a quaternion with w, x, y, z fields. Identity if no valid transform available (yet).
-  Q_PROPERTY( QVariant rotation READ rotation NOTIFY rotationChanged )
+  Q_PROPERTY( QVariant rotation READ rotation NOTIFY messageChanged )
 
   //! The maximum rate in Hz at which tf updates are processed and emitted as changed signals.
   //! Default: 60 Note: The rate can not exceed 1000. Setting to 0 will disable updates.
@@ -96,10 +96,6 @@ signals:
   void rateChanged();
 
   void messageChanged();
-
-  void translationChanged();
-
-  void rotationChanged();
 
   void validChanged();
 
