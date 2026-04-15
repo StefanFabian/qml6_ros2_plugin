@@ -700,6 +700,14 @@ TEST( Communication, tfTransform )
   EXPECT_NEAR( transform.rotation().toMap()["y"].toDouble(), 0.48208547, 1E-6 );
   EXPECT_NEAR( transform.rotation().toMap()["z"].toDouble(), -0.22809313, 1E-6 );
 
+  // Regression test: re-selecting a previously valid target frame should recover validity even
+  // if the transform contents are unchanged.
+  transform.setTargetFrame( "does_not_exist" );
+  ASSERT_TRUE( waitFor( [&]() { return !transform.valid(); } ) );
+  transform.setTargetFrame( "world" );
+  ASSERT_TRUE( waitFor( [&]() { return transform.valid(); } ) )
+      << "TfTransform did not recover validity when switching back to a valid frame pair";
+
   transform.setEnabled( false );
   EXPECT_FALSE( transform.enabled() );
   QCoreApplication::processEvents();
