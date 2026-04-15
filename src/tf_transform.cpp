@@ -35,6 +35,7 @@ void TfTransform::setSourceFrame( const QString &value )
   else
     subscribe();
 
+  updateMessage();
   emit sourceFrameChanged();
 }
 
@@ -48,6 +49,7 @@ void TfTransform::setTargetFrame( const QString &targetFrame )
   else
     subscribe();
 
+  updateMessage();
   emit targetFrameChanged();
 }
 
@@ -193,7 +195,9 @@ void TfTransform::updateMessage()
   try {
     const auto &transform = buf->lookupTransform( target_frame_.toStdString(),
                                                   source_frame_.toStdString(), tf2::TimePointZero );
-    if ( !isDifferent( transform, last_transform_ ) )
+    // If we are recovering from an invalid state, we must publish even if the
+    // transform payload equals the previous cached transform.
+    if ( was_valid && !isDifferent( transform, last_transform_ ) )
       return;
     last_transform_ = transform;
 
@@ -202,9 +206,7 @@ void TfTransform::updateMessage()
     message_ = result;
     if ( !was_valid )
       emit validChanged();
-    emit rotationChanged();
     emit messageChanged();
-    emit translationChanged();
   } catch ( tf2::LookupException &ex ) {
     QVariantMap result = msgToMap( geometry_msgs::msg::TransformStamped{} );
     result.insert( "valid", false );
