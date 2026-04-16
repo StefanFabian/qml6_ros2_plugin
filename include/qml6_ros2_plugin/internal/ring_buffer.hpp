@@ -32,6 +32,13 @@ public:
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
 
+  // This internal ring buffer stores elements in a std::array and overwrites existing slots by
+  // assignment, so value types must be default constructible and assignable.
+  static_assert( std::is_default_constructible<value_type>::value,
+                 "RingBuffer requires default constructible value types." );
+  static_assert( std::is_copy_assignable<value_type>::value,
+                 "RingBuffer requires copy assignable value types." );
+
   template<typename Iterator>
   struct ring_iterator;
   using iterator = ring_iterator<pointer>;
@@ -62,10 +69,8 @@ public:
   //! Deletes the oldest element in the RingBuffer.
   void pop_front()
   {
-    if ( size_ > 0 ) {
-      front().~value_type(); // front is last element -> oldest element
+    if ( size_ > 0 )
       removed_element_at_head_adapt_indices();
-    }
   }
 
   /*!
@@ -125,12 +130,8 @@ public:
   //! Clears the contents of the RingBuffer.
   void clear()
   {
-    if ( std::is_trivially_destructible<value_type>::value ) {
-      tail_index_ = 0;
-      size_ = 0;
-    } else {
-      while ( size_ > 0 ) pop_front();
-    }
+    tail_index_ = 0;
+    size_ = 0;
   }
 
   const_reference operator[]( std::size_t index ) const

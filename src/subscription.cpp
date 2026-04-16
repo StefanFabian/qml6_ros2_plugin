@@ -242,7 +242,6 @@ void Subscription::messageCallback( const std::shared_ptr<const rclcpp::Serializ
     std::lock_guard lock( telemetry_mutex_ );
     telemetry_tracker_.addSample( std::chrono::steady_clock::now(), serialized_msg->size() );
   }
-  QMetaObject::invokeMethod( this, "updateTelemetry", Qt::QueuedConnection );
   std::unique_lock lock( message_mutex_ );
   if ( throttle_rate_ == 0 ) {
     if ( qos_.rclcppQoS().history() == rclcpp::HistoryPolicy::KeepLast &&
