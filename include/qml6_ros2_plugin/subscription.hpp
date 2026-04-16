@@ -4,6 +4,7 @@
 #ifndef QML_ROS2_PLUGIN_SUBSCRIPTION_HPP
 #define QML_ROS2_PLUGIN_SUBSCRIPTION_HPP
 
+#include "qml6_ros2_plugin/internal/window_rate_tracker.hpp"
 #include "qml6_ros2_plugin/qobject_ros2.hpp"
 #include "qml6_ros2_plugin/qos.hpp"
 
@@ -11,8 +12,10 @@
 #include <QTimer>
 #include <QVariant>
 
+#include <chrono>
 #include <mutex>
 
+#include <rclcpp/serialized_message.hpp>
 #include <ros_babel_fish/babel_fish.hpp>
 
 namespace qml6_ros2_plugin
@@ -35,6 +38,12 @@ class Subscription : public QObjectRos2
   //! Set to a specific type to subscribe to that type, e.g., geometry_msgs/msg/Pose, otherwise the type is
   //! automatically detected and if the topic has multiple available types, one is arbitrarily selected.
   Q_PROPERTY( QString messageType READ messageType WRITE setMessageType NOTIFY messageTypeChanged )
+
+  //! The frequency in Hz in which new messages are received.
+  Q_PROPERTY( float frequency READ frequency NOTIFY frequencyChanged )
+
+  //! The approximate bandwidth consumed by the received messages in bytes per second.
+  Q_PROPERTY( float bandwidth READ bandwidth NOTIFY bandwidthChanged )
 
   //! Limits the frequency in which the notification for an updated message is emitted.
   //! Set to 0 to disable throttling and receive all messages.  Default: 20Hz
@@ -72,6 +81,10 @@ public:
 
   void setThrottleRate( int value );
 
+  float frequency() const;
+
+  float bandwidth() const;
+
   bool subscribed() const;
 
   const QVariant &message() const;
@@ -101,6 +114,10 @@ signals:
 
   void messageTypeChanged();
 
+  void frequencyChanged();
+
+  void bandwidthChanged();
+
   /*!
    * Emitted whenever a new message was received.
    * @param message The received message.
@@ -113,6 +130,8 @@ protected slots:
 
   void updateMessage();
 
+  void updateTelemetry();
+
 protected:
   void initTimers();
 
@@ -124,20 +143,25 @@ protected:
 
   void shutdown();
 
-  void messageCallback( const std::shared_ptr<ros_babel_fish::CompoundMessage> &msg );
+  void messageCallback( const std::shared_ptr<const rclcpp::SerializedMessage> &serialized_msg );
 
   QTimer subscribe_timer_;
   ros_babel_fish::BabelFish babel_fish_;
   ros_babel_fish::BabelFishSubscription::SharedPtr subscription_;
-  std::vector<ros_babel_fish::CompoundMessage::ConstSharedPtr> message_queue_;
+  std::vector<std::shared_ptr<const rclcpp::SerializedMessage>> message_queue_;
   std::mutex message_mutex_;
+  std::mutex telemetry_mutex_;
   QTimer throttle_timer_;
+  QTimer telemetry_timer_;
 
   QoSWrapper qos_;
   QString topic_;
   QString user_message_type_;
   QString message_type_;
   QVariant message_;
+  float frequency_ = 0.0f;
+  float bandwidth_ = 0.0f;
+  internal::WindowRateTracker<30> telemetry_tracker_;
   int throttle_rate_ = 20;
   bool running_ = true;
   bool is_subscribed_ = false;

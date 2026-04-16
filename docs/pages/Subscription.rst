@@ -69,6 +69,16 @@ with at most this rate.
 This is to reduce load and prevent race conditions that could otherwise update the message while QML
 is using it since the subscriber is receiving messages in a background thread by default.
 
+The ``frequency`` and ``bandwidth`` properties are read-only telemetry values:
+
+- ``frequency`` is the estimated message rate in Hz (before throttling).
+- ``bandwidth`` is the estimated incoming data rate in bytes per second (before throttling).
+
+Both are computed from a rolling time window of recent serialized messages.
+When the topic becomes idle, values do not immediately drop on every tick. Instead, they stay
+stable for a short staleness threshold and then taper to zero, which avoids noisy sawtooth
+behavior while still reaching zero once no data is received for long enough.
+
 Using the ``enabled`` property, the subscription can be enabled and disabled.
 If the property is set to ``false``, the subscription is shut down until it is
 set to ``true`` again and subscribes to the topic again.
