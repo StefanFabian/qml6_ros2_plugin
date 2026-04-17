@@ -4,6 +4,7 @@
 #ifndef QML_ROS2_PLUGIN_TF_BUFFER_HPP
 #define QML_ROS2_PLUGIN_TF_BUFFER_HPP
 
+#include "qml6_ros2_plugin/internal/window_rate_tracker.hpp"
 #include "qml6_ros2_plugin/qobject_ros2.hpp"
 #include "qml6_ros2_plugin/time.hpp"
 
@@ -196,10 +197,7 @@ private:
     bool is_static = false;
     geometry_msgs::msg::Transform transform;
     std::vector<std::string> children;
-    std::array<std::chrono::steady_clock::time_point, kFrequencyRingSize> recent_timestamps{};
-    std::size_t ts_head = 0;
-    std::size_t ts_count = 0;
-    double frequency = 0.0;
+    internal::WindowRateTracker<kFrequencyRingSize> frequency_tracker;
     rclcpp::Time last_stamp{ 0, 0, RCL_ROS_TIME };
   };
 
@@ -215,9 +213,8 @@ private:
 
   void evictCacheIfNeeded();
 
-  static void updateFrequency( FrameState &state );
-
-  static TfFrameInfo frameStateToInfo( const FrameState &state );
+  static TfFrameInfo frameStateToInfo( const FrameState &state,
+                                       std::chrono::steady_clock::time_point now );
 
   QString namespace_;
   std::unique_ptr<tf2_ros::Buffer> buffer_;

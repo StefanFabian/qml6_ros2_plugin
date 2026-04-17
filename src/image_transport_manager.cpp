@@ -5,8 +5,8 @@
 
 #include "./image_conversion.hpp"
 #include "./logging.hpp"
-#include "./ring_buffer.hpp"
 #include "./rolling_average.hpp"
+#include "qml6_ros2_plugin/internal/ring_buffer.hpp"
 #include "qml6_ros2_plugin/qobject_ros2.hpp"
 
 #include <QTimer>
