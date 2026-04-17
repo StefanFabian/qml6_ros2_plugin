@@ -2,8 +2,8 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.26.40 (2026-04-17)
+--------------------
 * Added bandwidth and frequency to Subscription. (`#50 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/50>`_)
   * Added bandwidth and frequency to Subscription. Refactored logic for computation affecting TfBuffer as well.
 * Ensure tf transform is always updated when target or source frame changes.
