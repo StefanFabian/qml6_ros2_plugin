@@ -31,6 +31,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(SOURCES
   include/qml6_ros2_plugin/conversion/message_conversions.hpp
   include/qml6_ros2_plugin/conversion/qml_ros_conversion.hpp
+  include/qml6_ros2_plugin/internal/ring_buffer.hpp
+  include/qml6_ros2_plugin/internal/window_rate_tracker.hpp
   include/qml6_ros2_plugin/array.hpp
   include/qml6_ros2_plugin/action_client.hpp
   include/qml6_ros2_plugin/ament_index.hpp

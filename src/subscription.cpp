@@ -7,6 +7,8 @@
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
 
+#include <cmath>
+
 using namespace qml6_ros2_plugin::conversion;
 
 namespace qml6_ros2_plugin
@@ -34,6 +36,9 @@ void Subscription::initTimers()
   connect( &subscribe_timer_, &QTimer::timeout, this, &Subscription::subscribe );
   subscribe_timer_.setInterval( std::chrono::milliseconds( 1000 ) );
   connect( &throttle_timer_, &QTimer::timeout, this, &Subscription::updateMessage );
+  connect( &telemetry_timer_, &QTimer::timeout, this, &Subscription::updateTelemetry );
+  telemetry_timer_.setSingleShot( false );
+  telemetry_timer_.setInterval( std::chrono::milliseconds( 100 ) );
   throttle_timer_.setSingleShot( false );
   if ( throttle_rate_ == 0 )
     throttle_timer_.stop();
@@ -98,6 +103,10 @@ void Subscription::setThrottleRate( int value )
   emit throttleRateChanged();
 }
 
+float Subscription::frequency() const { return frequency_; }
+
+float Subscription::bandwidth() const { return bandwidth_; }
+
 bool Subscription::subscribed() const { return is_subscribed_; }
 
 const QVariant &Subscription::message() const { return message_; }
@@ -153,17 +162,17 @@ void Subscription::try_subscribe()
     if ( user_message_type_.isEmpty() ) {
       subscription_ = babel_fish_.create_subscription(
           *node, topic_.toStdString(), qos_.rclcppQoS(),
-          [instance]( ros_babel_fish::CompoundMessage::SharedPtr msg ) {
+          [instance]( const std::shared_ptr<const rclcpp::SerializedMessage> &serialized_msg ) {
             if ( instance )
-              instance->messageCallback( msg );
+              instance->messageCallback( serialized_msg );
           },
           nullptr, {}, std::chrono::nanoseconds( 0 ) );
     } else {
       subscription_ = babel_fish_.create_subscription(
           *node, topic_.toStdString(), user_message_type_.toStdString(), qos_.rclcppQoS(),
-          [instance]( ros_babel_fish::CompoundMessage::SharedPtr msg ) {
+          [instance]( const std::shared_ptr<const rclcpp::SerializedMessage> &serialized_msg ) {
             if ( instance )
-              instance->messageCallback( msg );
+              instance->messageCallback( serialized_msg );
           },
           nullptr, {} );
     }
@@ -188,34 +197,64 @@ void Subscription::try_subscribe()
   is_subscribed_ = true;
   emit subscribedChanged();
   throttle_timer_.start();
+  telemetry_timer_.start();
 }
 
 void Subscription::shutdown()
 {
   if ( !is_subscribed_ )
     return;
+  bool frequency_changed = false;
+  bool bandwidth_changed = false;
+  {
+    std::lock_guard lock( message_mutex_ );
+    message_queue_.clear();
+  }
+  {
+    std::lock_guard lock( telemetry_mutex_ );
+    telemetry_tracker_.clear();
+    if ( frequency_ != 0.0f ) {
+      frequency_ = 0.0f;
+      frequency_changed = true;
+    }
+    if ( bandwidth_ != 0.0f ) {
+      bandwidth_ = 0.0f;
+      bandwidth_changed = true;
+    }
+  }
   subscription_.reset();
   throttle_timer_.stop();
+  telemetry_timer_.stop();
   is_subscribed_ = false;
   message_ = QVariant();
+  if ( frequency_changed )
+    emit frequencyChanged();
+  if ( bandwidth_changed )
+    emit bandwidthChanged();
   emit subscribedChanged();
 }
 
-void Subscription::messageCallback( const ros_babel_fish::CompoundMessage::SharedPtr &msg )
+void Subscription::messageCallback( const std::shared_ptr<const rclcpp::SerializedMessage> &serialized_msg )
 {
+  if ( serialized_msg == nullptr )
+    return;
+  {
+    std::lock_guard lock( telemetry_mutex_ );
+    telemetry_tracker_.addSample( std::chrono::steady_clock::now(), serialized_msg->size() );
+  }
   std::unique_lock lock( message_mutex_ );
   if ( throttle_rate_ == 0 ) {
     if ( qos_.rclcppQoS().history() == rclcpp::HistoryPolicy::KeepLast &&
          int( message_queue_.size() ) > qos_.depth() ) {
       message_queue_.erase( message_queue_.begin() );
     }
-    message_queue_.push_back( msg );
+    message_queue_.push_back( serialized_msg );
     lock.unlock();
     QMetaObject::invokeMethod( this, "updateMessage", Qt::QueuedConnection );
     return;
   }
   message_queue_.clear();
-  message_queue_.push_back( msg );
+  message_queue_.push_back( serialized_msg );
 }
 
 void Subscription::updateMessage()
@@ -223,11 +262,47 @@ void Subscription::updateMessage()
   std::unique_lock lock( message_mutex_ );
   if ( message_queue_.empty() )
     return;
-  for ( const auto &msg : message_queue_ ) {
+  auto subscription = subscription_;
+  if ( !subscription ) {
+    message_queue_.clear();
+    return;
+  }
+  for ( const auto &serialized_msg : message_queue_ ) {
+    if ( !serialized_msg )
+      continue;
+    ros_babel_fish::CompoundMessage msg;
+    if ( !subscription->deserialize( *serialized_msg, msg ) )
+      continue;
     message_ = msgToMap( msg );
     emit messageChanged();
     emit newMessage( message_ );
   }
   message_queue_.clear();
+}
+
+void Subscription::updateTelemetry()
+{
+  static constexpr float min_change_percentage = 0.01f;
+  bool frequency_changed = false;
+  bool bandwidth_changed = false;
+  {
+    std::lock_guard lock( telemetry_mutex_ );
+    const auto rates = telemetry_tracker_.rates( std::chrono::steady_clock::now() );
+    const float new_frequency = static_cast<float>( rates.frequency_hz );
+    const float new_bandwidth = static_cast<float>( rates.bandwidth_bps );
+
+    if ( std::abs( frequency_ - new_frequency ) > min_change_percentage * frequency_ ) {
+      frequency_ = new_frequency;
+      frequency_changed = true;
+    }
+    if ( std::abs( bandwidth_ - new_bandwidth ) > min_change_percentage * bandwidth_ ) {
+      bandwidth_ = new_bandwidth;
+      bandwidth_changed = true;
+    }
+  }
+  if ( frequency_changed )
+    emit frequencyChanged();
+  if ( bandwidth_changed )
+    emit bandwidthChanged();
 }
 } // namespace qml6_ros2_plugin
