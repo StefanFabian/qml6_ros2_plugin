@@ -2,6 +2,16 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added bandwidth and frequency to Subscription. (`#50 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/50>`_)
+  * Added bandwidth and frequency to Subscription. Refactored logic for computation affecting TfBuffer as well.
+* Ensure tf transform is always updated when target or source frame changes.
+* Added TfBuffer element with namespaced tf support (`#42 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/42>`_)
+  * Added TfBuffer to be able to get transforms from namespaced tf and additional information such as frame info.
+* Fix deprecation warnings during build due to interface changes in ament_index_cpp version 1.13.2.
+* Contributors: Stefan Fabian
+
 4.26.40 (2026-04-09)
 --------------------
 * Improved robustness of image transport property change handling. (`#38 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/38>`_)
