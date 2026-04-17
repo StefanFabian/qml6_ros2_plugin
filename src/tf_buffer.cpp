@@ -207,14 +207,7 @@ void TfBuffer::tfCallback( tf2_msgs::msg::TFMessage::ConstSharedPtr msg,
       state_it->second.is_static = is_static;
       state_it->second.transform = t.transform;
       state_it->second.last_stamp = rclcpp::Time( t.header.stamp );
-      // Frequency ring buffer update.
-      auto &state = state_it->second;
-      state.recent_timestamps[state.ts_head] = std::chrono::steady_clock::now();
-      if ( ++state.ts_head == kFrequencyRingSize )
-        state.ts_head = 0;
-      if ( state.ts_count < kFrequencyRingSize )
-        ++state.ts_count;
-      updateFrequency( state );
+      state_it->second.frequency_tracker.addSample( std::chrono::steady_clock::now() );
     }
   }
   for ( const auto &t : msg->transforms ) {
@@ -507,7 +500,8 @@ QString TfBuffer::getFrameAuthority( const QString &frame_id ) const
   return QString::fromStdString( it->second.authority );
 }
 
-TfFrameInfo TfBuffer::frameStateToInfo( const FrameState &state )
+TfFrameInfo TfBuffer::frameStateToInfo( const FrameState &state,
+                                        std::chrono::steady_clock::time_point now )
 {
   QVariantMap translation;
   translation["x"] = state.transform.translation.x;
@@ -521,28 +515,31 @@ TfFrameInfo TfBuffer::frameStateToInfo( const FrameState &state )
   QStringList children;
   children.reserve( static_cast<int>( state.children.size() ) );
   for ( const auto &c : state.children ) children.append( QString::fromStdString( c ) );
+  const auto rates = state.frequency_tracker.rates( now );
   return TfFrameInfo(
       QString::fromStdString( state.frame_id ), QString::fromStdString( state.parent_id ),
       QString::fromStdString( state.authority ), std::move( translation ), std::move( rotation ),
-      state.is_static, std::move( children ), state.frequency );
+      state.is_static, std::move( children ), rates.frequency_hz );
 }
 
 QVariant TfBuffer::getFrame( const QString &frame_id ) const
 {
   std::lock_guard<std::mutex> lock( authority_mutex_ );
+  const auto now = std::chrono::steady_clock::now();
   auto it = frame_states_.find( frame_id.toStdString() );
   if ( it == frame_states_.end() )
     return {};
-  return QVariant::fromValue( frameStateToInfo( it->second ) );
+  return QVariant::fromValue( frameStateToInfo( it->second, now ) );
 }
 
 QVariantList TfBuffer::getAllFrames() const
 {
   std::lock_guard<std::mutex> lock( authority_mutex_ );
+  const auto now = std::chrono::steady_clock::now();
   QVariantList result;
   result.reserve( static_cast<int>( frame_states_.size() ) );
   for ( const auto &pair : frame_states_ )
-    result.append( QVariant::fromValue( frameStateToInfo( pair.second ) ) );
+    result.append( QVariant::fromValue( frameStateToInfo( pair.second, now ) ) );
   return result;
 }
 
@@ -564,34 +561,6 @@ double TfBuffer::getTransformAge( const QString &frame_id ) const
   } catch ( ... ) {
     return -1.0;
   }
-}
-
-void TfBuffer::updateFrequency( FrameState &state )
-{
-  if ( state.ts_count < 2 ) {
-    state.frequency = 0.0;
-    return;
-  }
-  const auto now = std::chrono::steady_clock::now();
-  const auto window = std::chrono::seconds( 5 );
-  const auto cutoff = now - window;
-  // Find oldest and count entries within the window.
-  auto oldest = now;
-  std::size_t count = 0;
-  for ( std::size_t i = 0; i < state.ts_count; ++i ) {
-    std::size_t idx = ( state.ts_head - state.ts_count + i ) % kFrequencyRingSize;
-    if ( state.recent_timestamps[idx] >= cutoff ) {
-      ++count;
-      if ( state.recent_timestamps[idx] < oldest )
-        oldest = state.recent_timestamps[idx];
-    }
-  }
-  if ( count < 2 ) {
-    state.frequency = 0.0;
-    return;
-  }
-  const auto span = std::chrono::duration<double>( now - oldest ).count();
-  state.frequency = span > 0.0 ? static_cast<double>( count - 1 ) / span : 0.0;
 }
 
 } // namespace qml6_ros2_plugin

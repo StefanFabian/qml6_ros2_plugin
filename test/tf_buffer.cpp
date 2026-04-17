@@ -492,14 +492,29 @@ TEST( TfBuffer, frequency )
     for ( auto &tr : msg.transforms ) tr.header.stamp = node->now();
     pub->publish( msg );
     processEvents();
-    std::this_thread::sleep_for( 50ms );
+    std::this_thread::sleep_for( 10ms );
   }
 
   ASSERT_TRUE( waitFor( [&]() { return buffer.getFrame( "freq_base" ).isValid(); }, 5s ) );
 
   auto info = buffer.getFrame( "freq_base" ).value<TfFrameInfo>();
-  // Published at ~20 Hz, expect frequency > 0.
-  EXPECT_GT( info.frequency(), 0.0 );
+  // Published at ~100 Hz, expect frequency > 90.
+  EXPECT_GT( info.frequency(), 90.0 );
+
+  // After a moment of silence, frequency should drop but not immediately to zero due to decay.
+  std::this_thread::sleep_for( 40ms );
+  processEvents();
+  info = buffer.getFrame( "freq_base" ).value<TfFrameInfo>();
+  EXPECT_GT( info.frequency(), 50.0 );
+
+  ASSERT_TRUE( waitFor(
+      [&]() {
+        if ( !buffer.getFrame( "freq_base" ).isValid() )
+          return false;
+        return buffer.getFrame( "freq_base" ).value<TfFrameInfo>().frequency() < 0.1;
+      },
+      4s ) )
+      << "Frequency should decay to zero when no transforms are received.";
 }
 
 TEST( TfBuffer, singletonGetFrame )

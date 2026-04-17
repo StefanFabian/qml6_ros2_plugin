@@ -286,6 +286,44 @@ TEST( Communication, throttleRate )
   delete subscriber_pns;
 }
 
+TEST( Communication, subscriptionTelemetry )
+{
+  Ros2QmlSingletonWrapper wrapper;
+  auto pub = node->create_publisher<std_msgs::msg::Int32>( "~/test_telemetry", rclcpp::QoS( 20 ) );
+  auto subscriber = dynamic_cast<qml6_ros2_plugin::Subscription *>(
+      wrapper.createSubscription( "/communication/test_telemetry", 20 ) );
+  subscriber->setThrottleRate( 0 );
+  processEvents();
+
+  ASSERT_TRUE( waitFor( [&]() { return pub->get_subscription_count() > 0; }, 3s ) )
+      << "Timeout while waiting for telemetry subscriber to connect.";
+
+  std_msgs::msg::Int32 msg;
+  // Publish with approx 100Hz and 400 bytes/s (int32 is 4 bytes, so 100 messages/s is 400 bytes/s)
+  for ( int i = 0; i < 30; ++i ) {
+    msg.data = i;
+    pub->publish( msg );
+    processEvents();
+    std::this_thread::sleep_for( 10ms );
+  }
+
+  ASSERT_TRUE( waitFor(
+      [&]() { return subscriber->frequency() > 90.0f && subscriber->bandwidth() > 350.0f; }, 3s ) )
+      << "Telemetry did not rise as expected. Frequency: " << subscriber->frequency()
+      << ", bandwidth: " << subscriber->bandwidth();
+
+  std::this_thread::sleep_for( 40ms );
+  processEvents();
+  EXPECT_GT( subscriber->frequency(), 50.0f );
+
+  ASSERT_TRUE( waitFor(
+      [&]() { return subscriber->frequency() < 0.1f && subscriber->bandwidth() < 1.0f; }, 4s ) )
+      << "Telemetry did not decay to zero. Frequency: " << subscriber->frequency()
+      << ", bandwidth: " << subscriber->bandwidth();
+
+  delete subscriber;
+}
+
 TEST( Communication, queryTopics )
 {
   auto pub1 = node->create_publisher<geometry_msgs::msg::Pose>( "/query_topics/pose1", 10 );
