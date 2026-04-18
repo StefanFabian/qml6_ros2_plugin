@@ -215,6 +215,76 @@ TEST( Communication, subscriber )
   delete subscriber_ns;
 }
 
+TEST( Communication, subscriptionMessageResetAndTopicChangeCallbackRegression )
+{
+  Ros2QmlSingletonWrapper wrapper;
+  auto pub_a = node->create_publisher<std_msgs::msg::Int32>(
+      "/communication/subscription_regression/a",
+      rclcpp::QoS( 5 ).transient_local().reliable().keep_last( 5 ) );
+  auto pub_b = node->create_publisher<std_msgs::msg::Int32>(
+      "/communication/subscription_regression/b",
+      rclcpp::QoS( 5 ).transient_local().reliable().keep_last( 5 ) );
+  auto subscriber = dynamic_cast<qml6_ros2_plugin::Subscription *>(
+      wrapper.createSubscription( "/communication/subscription_regression/a",
+                                  QoSWrapper().reliable().transient_local().keep_last( 5 ) ) );
+  ASSERT_NE( subscriber, nullptr );
+  subscriber->setThrottleRate( 0 );
+
+  ASSERT_TRUE( waitFor( [&]() { return pub_a->get_subscription_count() > 0; }, 3s ) )
+      << "Timeout while waiting for subscription to topic A.";
+
+  std_msgs::msg::Int32 msg_a;
+  msg_a.data = 10;
+  pub_a->publish( msg_a );
+  ASSERT_TRUE( waitFor(
+      [&]() {
+        return subscriber->message().isValid() && subscriber->message().toMap()["data"].toInt() == 10;
+      },
+      3s ) )
+      << "Did not receive initial message on topic A.";
+
+  subscriber->setQoS( QoSWrapper().reliable().transient_local().keep_last( 20 ) );
+  EXPECT_TRUE( subscriber->message().isValid() )
+      << "Message should stay valid when only QoS changes.";
+  EXPECT_EQ( subscriber->message().toMap()["data"].toInt(), 10 )
+      << "Message content should not reset when only QoS changes.";
+
+  bool switched_topic_in_callback = false;
+  QObject::connect(
+      subscriber, &qml6_ros2_plugin::Subscription::messageChanged, subscriber,
+      [&]() {
+        if ( switched_topic_in_callback || !subscriber->message().isValid() )
+          return;
+        if ( subscriber->message().toMap()["data"].toInt() != 20 )
+          return;
+        switched_topic_in_callback = true;
+        subscriber->setTopic( "/communication/subscription_regression/b" );
+      },
+      Qt::DirectConnection );
+
+  msg_a.data = 20;
+  pub_a->publish( msg_a );
+  ASSERT_TRUE( waitFor( [&]() { return switched_topic_in_callback; }, 3s ) )
+      << "Expected messageChanged callback to switch topic without deadlock.";
+
+  ASSERT_TRUE( waitFor( [&]() { return pub_b->get_subscription_count() > 0; }, 3s ) )
+      << "Timeout while waiting for subscription to topic B.";
+
+  ASSERT_FALSE( subscriber->message().isValid() ) << "Message should reset when topic changes.";
+
+  std_msgs::msg::Int32 msg_b;
+  msg_b.data = 30;
+  pub_b->publish( msg_b );
+  ASSERT_TRUE( waitFor(
+      [&]() {
+        return subscriber->message().isValid() && subscriber->message().toMap()["data"].toInt() == 30;
+      },
+      3s ) )
+      << "Did not receive message on topic B after topic switch in callback.";
+
+  delete subscriber;
+}
+
 class Receiver : public QObject
 {
   Q_OBJECT
