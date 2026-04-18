@@ -54,6 +54,15 @@ QString Subscription::topic() const
 void Subscription::setTopic( const QString &value )
 {
   topic_ = value;
+  if ( is_subscribed_ )
+    shutdown();
+  if ( message_.isValid() ) {
+    std::unique_lock lock( message_mutex_ );
+    message_queue_.clear();
+    message_ = QVariant();
+    lock.unlock();
+    emit messageChanged();
+  }
   subscribe();
   emit topicChanged();
 }
@@ -119,6 +128,15 @@ void Subscription::setMessageType( const QString &value )
   if ( user_message_type_ == message_type_ )
     return;
   message_type_ = user_message_type_;
+  if ( is_subscribed_ )
+    shutdown();
+  if ( message_.isValid() ) {
+    std::unique_lock lock( message_mutex_ );
+    message_queue_.clear();
+    message_ = QVariant();
+    lock.unlock();
+    emit messageChanged();
+  }
   subscribe();
   emit messageTypeChanged();
 }
@@ -226,7 +244,6 @@ void Subscription::shutdown()
   throttle_timer_.stop();
   telemetry_timer_.stop();
   is_subscribed_ = false;
-  message_ = QVariant();
   if ( frequency_changed )
     emit frequencyChanged();
   if ( bandwidth_changed )
@@ -267,7 +284,10 @@ void Subscription::updateMessage()
     message_queue_.clear();
     return;
   }
-  for ( const auto &serialized_msg : message_queue_ ) {
+  std::vector<std::shared_ptr<const rclcpp::SerializedMessage>> messages_to_process;
+  message_queue_.swap( messages_to_process );
+  lock.unlock();
+  for ( const auto &serialized_msg : messages_to_process ) {
     if ( !serialized_msg )
       continue;
     ros_babel_fish::CompoundMessage msg;
@@ -277,7 +297,6 @@ void Subscription::updateMessage()
     emit messageChanged();
     emit newMessage( message_ );
   }
-  message_queue_.clear();
 }
 
 void Subscription::updateTelemetry()
