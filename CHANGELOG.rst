@@ -2,6 +2,12 @@
 Changelog for package qml6_ros2_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Backport jazzy] Subscription: Only reset message when topic or messageType is changed. (`#54 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/54>`_)
+  Also improved locking behavior when processing messages to prevent new possible deadlock if topic is changed in message changed callback.
+* Contributors: Stefan Fabian
+
 1.26.40 (2026-04-17)
 --------------------
 * Added bandwidth and frequency to Subscription. (`#50 <https://github.com/StefanFabian/qml6_ros2_plugin/issues/50>`_)
