@@ -66,6 +66,19 @@ mapAndMessageEqual( const QVariant &map, const std::vector<ElementType> msg,
   return mapAndMessageEqualArray( map.value<Array>(), msg, path, precision );
 }
 
+#if QML_ROS2_PLUGIN_HAS_ROSIDL_BUFFER
+template<typename ElementType, typename Allocator>
+::testing::AssertionResult
+mapAndMessageEqual( const QVariant &map, const rosidl::Buffer<ElementType, Allocator> &msg,
+                    const std::string &path = "msg", double precision = DEFAULT_PRECISION )
+{
+  if ( map.typeId() == QMetaType::QVariantList ) {
+    return mapAndMessageEqualArray( map.toList(), msg, path, precision );
+  }
+  return mapAndMessageEqualArray( map.value<Array>(), msg, path, precision );
+}
+#endif
+
 template<typename ElementType, unsigned long N>
 ::testing::AssertionResult
 mapAndMessageEqual( const QVariant &map, const rosidl_runtime_cpp::BoundedVector<ElementType, N> &msg,
