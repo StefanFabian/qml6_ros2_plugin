@@ -127,11 +127,14 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_logging test/logging.cpp)
   target_link_libraries(test_logging ${PROJECT_NAME})
-  #
+
+  ament_add_gtest(test_ament_index test/ament_index.cpp)
+  target_link_libraries(test_ament_index ${PROJECT_NAME})
+
   ament_add_gtest(test_io test/io.cpp)
   target_link_libraries(test_io ${PROJECT_NAME} ${TEST_DEPENDENCIES})
 
-  install(DIRECTORY test/test_io DESTINATION share/qml6_ros2_plugin/test/)
+  install(DIRECTORY test/test_io test/test_ament_index DESTINATION share/qml6_ros2_plugin/test/)
 endif()
 
 # to run: catkin build --this --no-deps -DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -v --catkin-make-args ${PROJECT_NAME}_coverage
