@@ -3,7 +3,6 @@
 
 #include <qml6_ros2_plugin/ament_index.hpp>
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <cstdlib>
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -13,6 +12,12 @@
   #include <ament_index_cpp/version.h>
 #else
   #define AMENT_INDEX_CPP_VERSION_GTE( major, minor, patch ) false
+#endif
+
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 2 )
+  #include <ament_index_cpp/get_package_share_path.hpp>
+#else
+  #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
 
 using namespace qml6_ros2_plugin;
@@ -55,7 +60,9 @@ protected:
     ASSERT_TRUE( original_.has_value() );
 
     fs::path data_dir;
-#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
+#if AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 2 )
+    data_dir = ament_index_cpp::get_package_share_path( "qml6_ros2_plugin" );
+#elif AMENT_INDEX_CPP_VERSION_GTE( 1, 13, 0 )
     ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin", data_dir );
 #else
     data_dir = ament_index_cpp::get_package_share_directory( "qml6_ros2_plugin" );
