@@ -184,15 +184,14 @@ void Subscription::try_subscribe()
             if ( instance )
               instance->messageCallback( serialized_msg );
           },
-          nullptr, {}, std::chrono::nanoseconds( 0 ) );
+          {}, std::chrono::nanoseconds( 0 ) );
     } else {
       subscription_ = babel_fish_.create_subscription(
           *node, topic_.toStdString(), user_message_type_.toStdString(), qos_.rclcppQoS(),
           [instance]( const std::shared_ptr<const rclcpp::SerializedMessage> &serialized_msg ) {
             if ( instance )
               instance->messageCallback( serialized_msg );
-          },
-          nullptr, {} );
+          } );
     }
   } catch ( const std::exception &e ) {
     QML_ROS2_PLUGIN_ERROR( "Failed to create subscription: %s", e.what() );
