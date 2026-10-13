@@ -35,6 +35,18 @@ public:
 
   //! @return A list of all packages.
   Q_INVOKABLE QStringList getPackages();
+
+  /*!
+   * Queries a resource registered in the ament index.
+   * @param resource_type The type of the resource, e.g. "rclcpp_components".
+   *   Only letters, digits, '_' and '-' are allowed.
+   * @param resource_name The name of the resource, e.g. the package name.
+   *   Only letters, digits, '_' and '-' are allowed.
+   * @return An object with the resource's \c content and the \c prefix path of the install
+   * location it was found in, or undefined if an argument is invalid, the resource is not found
+   * or the lookup failed.
+   */
+  Q_INVOKABLE QVariant getResource( const QString &resource_type, const QString &resource_name );
 };
 } // namespace qml6_ros2_plugin
 
