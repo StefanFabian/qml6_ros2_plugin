@@ -33,5 +33,22 @@ ApplicationWindow {
     Text {
       text: "Share directory: " + (packageComboBox.currentText && AmentIndex.getPackageShareDirectory(packageComboBox.currentText))
     }
+    RowLayout {
+      Text {
+        text: "Resource type:"
+      }
+      TextField {
+        id: resourceTypeField
+        Layout.fillWidth: true
+        text: "package_run_dependencies"
+      }
+    }
+    Text {
+      // Resources are looked up by type and name. Many resource types use the package name as name.
+      property var resource: packageComboBox.currentText && AmentIndex.getResource(resourceTypeField.text, packageComboBox.currentText)
+      Layout.fillWidth: true
+      wrapMode: Text.Wrap
+      text: resource ? "Resource found in " + resource.prefix + ":\n" + resource.content : "Resource not found"
+    }
   }
 }
