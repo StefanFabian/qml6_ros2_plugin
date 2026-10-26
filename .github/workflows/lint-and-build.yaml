@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - name: Setup
         run: |
-          sudo apt-get update && sudo apt-get install -y clang-format cppcheck libxml2-utils
+          sudo apt-get update && sudo apt-get install -y clang-format-18 cppcheck libxml2-utils
       - name: Lint C++
         run: |
           clang-format -Werror -n -style=file $(find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.c' -o -name '*.cc')
