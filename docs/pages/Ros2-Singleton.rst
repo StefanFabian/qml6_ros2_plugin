@@ -96,6 +96,73 @@ Example:
     if (Ros2.queryTopicTypes(topics[i]).includes("sensor_msgs/msg/Image")) cameraTopics.push(topics[i])
   }
 
+The nodes in the graph and the interfaces of a single node can be queried using:
+
+* | ``QVariantList getNodeNamesAndNamespaces()``
+  | Retrieves a list of all nodes. Each entry has the keys ``name``, ``namespace`` and ``fullName``.
+* | ``QVariantMap getNodeInfo( const QString &name, const QString &ns )``
+  | Retrieves the node with the given name (without namespace) and namespace, e.g., ``"/"`` or ``"/my_ns"``.
+    The result has the keys of a ``getNodeNamesAndNamespaces`` entry and additionally ``publishers``,
+    ``subscriptions``, ``serviceServers``, ``serviceClients``, ``actionServers`` and ``actionClients``,
+    each a list of entries with the keys ``name`` and ``datatypes``.
+    The internal topics and services of actions are not included.
+    Returns an empty map if the node is not in the graph or, with a logged warning, if the name or namespace
+    is invalid, e.g., the full name was passed as ``name``.
+* | ``QVariantList getAllNodeInfo()``
+  | Retrieves all nodes, each entry as returned by ``getNodeInfo``.
+
+The endpoints on a topic, e.g., to find out which nodes are connected and with which QoS settings, can be queried using:
+
+* | ``QVariantList getPublishersInfoByTopic( const QString &topic )``
+  | Retrieves the publishers on the given fully qualified topic, e.g., ``/front_camera/image_raw``.
+    Each entry has the keys ``nodeName``, ``nodeNamespace``, ``datatype`` and ``qos``, its QoS settings,
+    see `Quality of Service`_.
+    These are the settings reported by the middleware (RMW). The reported history and depth are RMW dependent,
+    e.g., Fast DDS reports ``HistoryPolicy.Unknown`` and a depth of 0.
+    Returns an empty list with a logged warning if the topic name is invalid or not fully qualified.
+* | ``QVariantList getSubscriptionsInfoByTopic( const QString &topic )``
+  | Retrieves the subscriptions on the given topic with the same keys as ``getPublishersInfoByTopic``.
+
+Example:
+
+.. code-block:: qml
+
+  var nodes = Ros2.getAllNodeInfo()
+  for (var i = 0; i < nodes.length; ++i) {
+    for (var j = 0; j < nodes[i].publishers.length; ++j) {
+      var topic = nodes[i].publishers[j].name
+      var subscriptions = Ros2.getSubscriptionsInfoByTopic(topic)
+      var reliable = subscriptions.filter(sub => sub.qos.reliability === ReliabilityPolicy.Reliable)
+      console.log(nodes[i].fullName + " publishes " + topic + " to " + reliable.length + " reliable subscribers")
+    }
+  }
+
+The ``graphChanged`` signal is emitted when the graph changed, e.g., a node, publisher, subscription, service or
+action appeared or vanished, including those of this application.
+Changes are combined, so it is emitted at most every 100 ms.
+Use it to refresh queried graph information only when needed instead of polling:
+
+.. code-block:: qml
+
+  Connections {
+    target: Ros2
+    function onGraphChanged() { nodeList.model = Ros2.getNodeNamesAndNamespaces() }
+  }
+
+Quality of Service
+------------------
+QoS settings are created using ``Ros2.QoS()`` or one of the preset profiles, e.g., ``Ros2.SensorDataQoS()``,
+and configured by chaining, e.g., ``Ros2.QoS().reliable().transient_local().keep_last(10)``.
+
+The settings of a QoS object can be read using the read-only ``reliability``, ``durability``, ``history`` and ``depth``
+properties. The policies can be compared to the ``ReliabilityPolicy``, ``DurabilityPolicy`` and ``HistoryPolicy`` enums.
+
+.. code-block:: qml
+
+  var qos = Ros2.QoS().reliable().transient_local().keep_last(5)
+  if (qos.reliability === ReliabilityPolicy.Reliable && qos.durability === DurabilityPolicy.TransientLocal)
+    console.log("Late joining subscribers receive up to " + qos.depth + " messages.")
+
 Create Empty Message
 --------------------
 You can also create empty messages and service requests as javascript objects using the ``Ros2`` singleton.
@@ -144,6 +211,15 @@ API
 
 .. doxygenclass:: qml6_ros2_plugin::QoSWrapper
   :members:
+
+.. doxygenenum:: qml6_ros2_plugin::qos_reliability_policy::ReliabilityPolicy
+   :project: project
+
+.. doxygenenum:: qml6_ros2_plugin::qos_durability_policy::DurabilityPolicy
+   :project: project
+
+.. doxygenenum:: qml6_ros2_plugin::qos_history_policy::HistoryPolicy
+   :project: project
 
 .. doxygenclass:: qml6_ros2_plugin::Ros2QmlSingletonWrapper
   :members:

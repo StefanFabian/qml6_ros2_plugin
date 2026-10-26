@@ -102,15 +102,15 @@ QVariant Array::at( int index ) const
   return ros_babel_fish::invoke_for_array_message( *p_->message, ElementGetter{}, index, p_ );
 }
 
-QVariant &Array::atRef( int index )
+QVariant *Array::atRef( int index )
 {
   if ( index < 0 || index >= length() ) {
-    throw std::out_of_range( "Index out of range" );
+    return nullptr;
   }
   if ( p_->cache.size() > index && p_->cache[index].isValid() )
-    return p_->cache[index];
+    return &p_->cache[index];
   p_->cache.resize( index + 1 );
-  return p_->cache[index] = at( index );
+  return &( p_->cache[index] = at( index ) );
 }
 
 void Array::spliceList( int start, int delete_count, const QVariantList &items )
