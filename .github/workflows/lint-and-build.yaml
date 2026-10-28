@@ -27,7 +27,7 @@ jobs:
           cppcheck --force --library=qt --quiet --error-exitcode=1 include src
       - name: Lint package.xml
         run: |
-          xmllint --noout --schema http://download.ros.org/schema/package_format3.xsd $(find . -name 'package.xml')
+          xmllint --noout --schema <(curl -sf http://download.ros.org/schema/package_format3.xsd) $(find . -name 'package.xml')
 
   build-and-test:
     needs: Linting
@@ -38,7 +38,7 @@ jobs:
       matrix:
         setup:
           - rosdistro: rolling
-            os: ubuntu-24.04
+            os: ubuntu-26.04
     steps:
       - name: install build tools and latest testing repo
         run: |
