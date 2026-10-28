@@ -726,12 +726,21 @@ return {
   handle1 = dynamic_cast<GoalHandle *>(
       client.sendGoalAsync( { { "target", 1700 } }, options ).toQObject() );
   ASSERT_NE( handle1, nullptr );
-  ASSERT_TRUE( waitFor( [&handle1]() { return handle1->status() == action_goal_status::Accepted; } ) );
+  // ACCEPT_AND_EXECUTE server may switch to Executing before we observe Accepted
+  ASSERT_TRUE( waitFor( [&handle1]() {
+    return handle1->status() == action_goal_status::Accepted ||
+           handle1->status() == action_goal_status::Executing;
+  } ) )
+      << handle1->status();
   waitFor( 10ms );
   handle2 = dynamic_cast<GoalHandle *>(
       client.sendGoalAsync( { { "target", 1800 } }, options ).toQObject() );
   ASSERT_NE( handle2, nullptr );
-  ASSERT_TRUE( waitFor( [&handle2]() { return handle2->status() == action_goal_status::Accepted; } ) );
+  ASSERT_TRUE( waitFor( [&handle2]() {
+    return handle2->status() == action_goal_status::Accepted ||
+           handle2->status() == action_goal_status::Executing;
+  } ) )
+      << handle2->status();
   waitFor( 10ms );
   QDateTime now = rosToQmlTime( node->now() );
   waitFor( 50ms );
