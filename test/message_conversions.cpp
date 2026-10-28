@@ -274,6 +274,13 @@ TEST( MessageConversion, array )
 
   EXPECT_FALSE( map.toHash()["float32s"].value<Array>()._isModified( 0 ) );
 
+  auto float64s_array = map.toMap()["float64s"].value<Array>();
+  ASSERT_GT( float64s_array.length(), 0 );
+  EXPECT_EQ( float64s_array.atRef( -1 ), nullptr );
+  EXPECT_EQ( float64s_array.atRef( float64s_array.length() ), nullptr );
+  ASSERT_NE( float64s_array.atRef( 0 ), nullptr );
+  EXPECT_EQ( float64s_array.atRef( 0 )->toDouble(), test_array.float64s[0] );
+
   // Remove element from end
   auto int32s_array = map.toMap()["int32s"].value<Array>();
   ASSERT_FALSE( int32s_array._inCache() );
