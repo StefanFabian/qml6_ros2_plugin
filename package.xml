@@ -14,7 +14,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>ament_index_cpp</depend>
+  <depend>rcl</depend>
+  <depend>rcl_action</depend>
   <depend>rclcpp</depend>
+  <depend>rmw</depend>
   <depend>image_transport</depend>
   <depend>libqt6-core</depend>
   <depend>libqt6-multimedia</depend>
@@ -34,7 +37,9 @@
   <test_depend>example_interfaces</test_depend>
   <test_depend>qml6-module-qtqml-workerscript</test_depend>
   <test_depend>qml6-module-qtquick</test_depend>
+  <test_depend>rclcpp_action</test_depend>
   <test_depend>ros_babel_fish_test_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
   <test_depend>std_srvs</test_depend>
 
   <export>

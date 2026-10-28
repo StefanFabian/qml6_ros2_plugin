@@ -7,6 +7,11 @@
   `nanoseconds`, and `clockType` were removed and are now available as methods.
   This change was done to make the types more consistent with the message.
 
+### QoS
+
+* `depth` is now a read-only property instead of a method, i.e., use `qos.depth` instead of `qos.depth()`.
+  This makes it consistent with the new read-only `reliability`, `durability` and `history` properties.
+
 ### ImageTransport
 
 * Due to changes from Qt5 to Qt6, a rewrite was necessary. For the usage the only
