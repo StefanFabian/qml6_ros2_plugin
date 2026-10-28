@@ -183,7 +183,7 @@ QVariant *MessageTreeItem::getItemDataPtr() const
   if ( type_ == ArrayElement ) {
     if ( item_data->typeId() == qMetaTypeId<qml6_ros2_plugin::Array>() ) {
       auto *array = static_cast<qml6_ros2_plugin::Array *>( item_data->data() );
-      return &( array->atRef( index_ ) ); // Not supported
+      return array->atRef( index_ );
     }
     if ( item_data->typeId() != QMetaType::QVariantList ) {
       QML_ROS2_PLUGIN_ERROR( "MessageTreeItem::getItemDataPtr: Unexpected type '%d'!",
@@ -191,6 +191,8 @@ QVariant *MessageTreeItem::getItemDataPtr() const
       return nullptr;
     }
     auto *arr_msg = static_cast<QVariantList *>( item_data->data() );
+    if ( index_ < 0 || index_ >= arr_msg->size() )
+      return nullptr;
     return &( ( *arr_msg )[index_] );
   }
   if ( item_data->typeId() != QMetaType::QVariantMap ) {
@@ -208,6 +210,8 @@ QVariant MessageTreeItem::getItemData() const
     return *root_data_;
   }
   QVariant *item_data = parent_item_->getItemDataPtr();
+  if ( item_data == nullptr )
+    return {};
   if ( type_ == ArrayElement ) {
     if ( item_data->typeId() == qMetaTypeId<qml6_ros2_plugin::Array>() ) {
       auto *array = static_cast<qml6_ros2_plugin::Array *>( item_data->data() );
@@ -219,7 +223,7 @@ QVariant MessageTreeItem::getItemData() const
       return {};
     }
     auto *arr_msg = static_cast<QVariantList *>( item_data->data() );
-    return ( ( *arr_msg )[index_] );
+    return arr_msg->value( index_ );
   }
   if ( item_data->typeId() == qMetaTypeId<qml6_ros2_plugin::Time>() ) {
     auto time = static_cast<qml6_ros2_plugin::Time *>( item_data->data() );
@@ -250,6 +254,8 @@ bool MessageTreeItem::setItemData( QVariant value )
     return true;
   }
   QVariant *item_data = parent_item_->getItemDataPtr();
+  if ( item_data == nullptr )
+    return false;
   if ( type_ == ArrayElement ) {
     if ( item_data->typeId() == qMetaTypeId<qml6_ros2_plugin::Array>() ) {
       auto *array = static_cast<qml6_ros2_plugin::Array *>( item_data->data() );
@@ -262,6 +268,8 @@ bool MessageTreeItem::setItemData( QVariant value )
       return false;
     }
     auto *arr_msg = static_cast<QVariantList *>( item_data->data() );
+    if ( index_ < 0 || index_ >= arr_msg->size() )
+      return false;
     ( *arr_msg )[index_] = value;
     return true;
   }
@@ -358,6 +366,8 @@ bool MessageTreeItem::removeChildren( int index, int count )
     return false;
   }
   QVariant *item_data = getItemDataPtr();
+  if ( item_data == nullptr )
+    return false;
   if ( item_data->typeId() == qMetaTypeId<qml6_ros2_plugin::Array>() ) {
     auto *array = static_cast<qml6_ros2_plugin::Array *>( item_data->data() );
     array->spliceList( index, count, {} );
