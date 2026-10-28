@@ -729,7 +729,8 @@ return {
   ASSERT_TRUE( waitFor( [&handle1]() {
     return handle1->status() == action_goal_status::Accepted ||
            handle1->status() == action_goal_status::Executing;
-  } ) ) << handle1->status();
+  } ) )
+      << handle1->status();
   waitFor( 10ms );
   handle2 = dynamic_cast<GoalHandle *>(
       client.sendGoalAsync( { { "target", 1800 } }, options ).toQObject() );
@@ -737,7 +738,8 @@ return {
   ASSERT_TRUE( waitFor( [&handle2]() {
     return handle2->status() == action_goal_status::Accepted ||
            handle2->status() == action_goal_status::Executing;
-  } ) ) << handle2->status();
+  } ) )
+      << handle2->status();
   waitFor( 10ms );
   QDateTime now = rosToQmlTime( node->now() );
   waitFor( 50ms );
