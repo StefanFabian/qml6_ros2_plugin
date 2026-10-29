@@ -110,6 +110,12 @@ public:
     qRegisterMetaType<ros_babel_fish::CompoundMessage::ConstSharedPtr>();
 
     qRegisterMetaType<QoSWrapper>();
+    qmlRegisterUncreatableMetaObject( qos_reliability_policy::staticMetaObject, "Ros2", 1, 0,
+                                      "ReliabilityPolicy", "Error: Can not create enum object." );
+    qmlRegisterUncreatableMetaObject( qos_durability_policy::staticMetaObject, "Ros2", 1, 0,
+                                      "DurabilityPolicy", "Error: Can not create enum object." );
+    qmlRegisterUncreatableMetaObject( qos_history_policy::staticMetaObject, "Ros2", 1, 0,
+                                      "HistoryPolicy", "Error: Can not create enum object." );
     // Time
     qRegisterMetaType<Time>();
     qRegisterMetaType<Duration>();

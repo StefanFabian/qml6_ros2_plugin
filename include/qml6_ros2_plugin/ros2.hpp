@@ -128,6 +128,50 @@ public:
   QMap<QString, QStringList> getActionNamesAndTypes() const;
 
   /*!
+   * Queries the ROS graph for all nodes and their namespaces.
+   * @return A list of maps, each with the keys "name", "namespace" and "fullName".
+   */
+  QVariantList getNodeNamesAndNamespaces() const;
+
+  /*!
+   * Queries the ROS graph for the interfaces of a single node.
+   * @param name The node name without namespace.
+   * @param ns The node namespace, e.g., "/" or "/my_ns".
+   * @return A map as returned by getNodeNamesAndNamespaces(), additionally with the keys
+   *   "publishers", "subscriptions", "serviceServers", "serviceClients", "actionServers" and
+   *   "actionClients", each a list of maps with "name" and "datatypes". The internal topics and
+   *   services of actions are not included. The map is empty if the node is not in the graph
+   *   or, with a logged warning, if the name or namespace is invalid.
+   */
+  QVariantMap getNodeInfo( const QString &name, const QString &ns ) const;
+
+  /*!
+   * Queries the ROS graph for the interfaces of all nodes.
+   * @return A list with one map per node as returned by getNodeInfo().
+   *   Nodes that leave the graph during the query are left out.
+   */
+  QVariantList getAllNodeInfo() const;
+
+  /*!
+   * Queries the ROS graph for the publishers on a topic.
+   * See rclcpp::Node::get_publishers_info_by_topic() for more information.
+   * @param topic The fully qualified topic name, e.g., /front_camera/image_raw.
+   * @return A list with one map per publisher with the keys "nodeName", "nodeNamespace",
+   *   "datatype" and "qos", its QoSWrapper. The reported history and depth are RMW dependent,
+   *   e.g., Fast DDS reports Unknown and 0. The list is empty, with a logged warning, if the topic
+   *   name is invalid or not fully qualified.
+   */
+  QVariantList getPublishersInfoByTopic( const QString &topic ) const;
+
+  /*!
+   * Queries the ROS graph for the subscriptions on a topic.
+   * See rclcpp::Node::get_subscriptions_info_by_topic() for more information.
+   * @param topic The fully qualified topic name, e.g., /front_camera/image_raw.
+   * @return A list with one map per subscription, see getPublishersInfoByTopic().
+   */
+  QVariantList getSubscriptionsInfoByTopic( const QString &topic ) const;
+
+  /*!
    * Creates an empty message for the given message type, e.g., "geometry_msgs/Point".
    * If the message type is known, an empty message with all members set to their default is returned.
    * If the message type is not found on the current machine, a warning message is printed and null is returned.
@@ -182,7 +226,17 @@ signals:
   //! Emitted when this ROS node was shut down and it is time to exit.
   void aboutToShutdown();
 
+  /*!
+   * Emitted when the ROS graph changed, e.g., a node, publisher, subscription, service or action
+   * appeared or vanished, including those of this application. Changes are combined, so it is
+   * emitted at most every 100 ms.
+   */
+  void graphChanged();
+
 private:
+  //! Polls graph_event_, which rclcpp's graph listener thread sets on every graph change.
+  QTimer graph_timer_;
+  rclcpp::Event::SharedPtr graph_event_;
   std::thread executor_thread_;
   std::atomic<bool> executor_running_{ false };
   std::shared_ptr<rclcpp::Context> context_;
@@ -291,6 +345,21 @@ public:
   Q_INVOKABLE QVariantMap getActionNamesAndTypes() const;
 
   Q_INVOKABLE QStringList getActionTypes( const QString &name ) const;
+
+  //! @copydoc Ros2Qml::getNodeNamesAndNamespaces
+  Q_INVOKABLE QVariantList getNodeNamesAndNamespaces() const;
+
+  //! @copydoc Ros2Qml::getNodeInfo
+  Q_INVOKABLE QVariantMap getNodeInfo( const QString &name, const QString &ns ) const;
+
+  //! @copydoc Ros2Qml::getAllNodeInfo
+  Q_INVOKABLE QVariantList getAllNodeInfo() const;
+
+  //! @copydoc Ros2Qml::getPublishersInfoByTopic
+  Q_INVOKABLE QVariantList getPublishersInfoByTopic( const QString &topic ) const;
+
+  //! @copydoc Ros2Qml::getSubscriptionsInfoByTopic
+  Q_INVOKABLE QVariantList getSubscriptionsInfoByTopic( const QString &topic ) const;
 
   //! @copydoc Ros2Qml::createEmptyMessage
   Q_INVOKABLE QVariant createEmptyMessage( const QString &datatype ) const;
@@ -413,6 +482,9 @@ signals:
 
   //! @copydoc Ros2Qml::aboutToShutdown
   void aboutToShutdown();
+
+  //! @copydoc Ros2Qml::graphChanged
+  void graphChanged();
 
 private:
   bool initLogging();

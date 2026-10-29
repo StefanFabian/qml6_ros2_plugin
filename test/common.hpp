@@ -13,6 +13,13 @@
 #include <rclcpp/time.hpp>
 #include <vector>
 
+// Since ROS 2 Lyrical, unbounded uint8[] fields are generated as rosidl::Buffer instead of
+// std::vector to allow for vendor-specific memory backends.
+#if __has_include( <rosidl_buffer/buffer.hpp> )
+  #define QML_ROS2_PLUGIN_HAS_ROSIDL_BUFFER 1
+  #include <rosidl_buffer/buffer.hpp>
+#endif
+
 QT_BEGIN_NAMESPACE
 inline void PrintTo( const QString &qString, ::std::ostream *os )
 {
@@ -57,13 +64,15 @@ void fillArray( std::vector<T> &msg, unsigned seed )
   for ( size_t i = 0; i < length; ++i ) { msg.push_back( distribution( generator ) ); }
 }
 
-// Rolling generates dynamic primitive arrays (e.g. uint8[]) as rosidl::Buffer instead of
-// std::vector. It is a drop-in replacement, so fill the underlying CPU vector storage.
-template<typename T>
-void fillArray( rosidl::Buffer<T> &msg, unsigned seed )
+#if QML_ROS2_PLUGIN_HAS_ROSIDL_BUFFER
+template<typename T, typename Allocator>
+void fillArray( rosidl::Buffer<T, Allocator> &msg, unsigned seed )
 {
-  fillArray( static_cast<std::vector<T> &>( msg ), seed );
+  std::vector<T, Allocator> values;
+  fillArray( values, seed );
+  msg = std::move( values );
 }
+#endif
 
 template<typename T, size_t L>
 void fillArray( rosidl_runtime_cpp::BoundedVector<T, L> &msg, unsigned seed )

@@ -4,6 +4,7 @@
 #ifndef QML_ROS2_PLUGIN_LOGGING_HPP
 #define QML_ROS2_PLUGIN_LOGGING_HPP
 
+#include <rclcpp/clock.hpp>
 #include <rclcpp/logging.hpp>
 
 #define QML_ROS2_PLUGIN_DEBUG( ... )                                                               \

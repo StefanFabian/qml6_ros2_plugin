@@ -36,9 +36,8 @@ void ServiceClient::onRos2Initialized()
 {
   try {
     rclcpp::Node &node = *Ros2Qml::getInstance().node();
-    client_ =
-        babel_fish_.create_service_client( node, name_.toStdString(), service_type_.toStdString(),
-                                           qos_.rclcppQoS().get_rmw_qos_profile() );
+    client_ = babel_fish_.create_service_client( node, name_.toStdString(),
+                                                 service_type_.toStdString(), qos_.rclcppQoS() );
   } catch ( BabelFishException &ex ) {
     QML_ROS2_PLUGIN_ERROR( "Could not create ServiceClient: %s", ex.what() );
     client_ = nullptr;

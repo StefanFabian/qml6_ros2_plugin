@@ -3,6 +3,8 @@
 
 #include "qml6_ros2_plugin/qos.hpp"
 
+#include <QMetaEnum>
+
 namespace qml6_ros2_plugin
 {
 QoSWrapper::QoSWrapper() : qos_( 1 )
@@ -49,67 +51,40 @@ qml6_ros2_plugin::QoSWrapper QoSWrapper::keep_last( int depth )
   return *this;
 }
 
+qos_reliability_policy::ReliabilityPolicy QoSWrapper::reliability() const
+{
+  return static_cast<qos_reliability_policy::ReliabilityPolicy>( qos_.reliability() );
+}
+
+qos_durability_policy::DurabilityPolicy QoSWrapper::durability() const
+{
+  return static_cast<qos_durability_policy::DurabilityPolicy>( qos_.durability() );
+}
+
+qos_history_policy::HistoryPolicy QoSWrapper::history() const
+{
+  return static_cast<qos_history_policy::HistoryPolicy>( qos_.history() );
+}
+
 int QoSWrapper::depth() const { return qos_.depth(); }
 
 namespace
 {
-std::string to_string( const rclcpp::ReliabilityPolicy &reliability )
+template<typename Enum>
+std::string to_string( Enum value )
 {
-  switch ( reliability ) {
-  case rclcpp::ReliabilityPolicy::BestEffort:
-    return "BestEffort";
-  case rclcpp::ReliabilityPolicy::Reliable:
-    return "Reliable";
-  case rclcpp::ReliabilityPolicy::SystemDefault:
-    return "SystemDefault";
-  case rclcpp::ReliabilityPolicy::BestAvailable:
-    return "BestAvailable";
-  case rclcpp::ReliabilityPolicy::Unknown:
-    return "Unknown";
-  }
-  return "Invalid";
-}
-
-std::string to_string( const rclcpp::DurabilityPolicy &durability )
-{
-  switch ( durability ) {
-  case rclcpp::DurabilityPolicy::Volatile:
-    return "Volatile";
-  case rclcpp::DurabilityPolicy::TransientLocal:
-    return "TransientLocal";
-  case rclcpp::DurabilityPolicy::SystemDefault:
-    return "SystemDefault";
-  case rclcpp::DurabilityPolicy::Unknown:
-    return "Unknown";
-  case rclcpp::DurabilityPolicy::BestAvailable:
-    return "BestAvailable";
-  }
-  return "Invalid";
-}
-
-std::string to_string( const rclcpp::HistoryPolicy &history )
-{
-  switch ( history ) {
-  case rclcpp::HistoryPolicy::KeepLast:
-    return "KeepLast";
-  case rclcpp::HistoryPolicy::KeepAll:
-    return "KeepAll";
-  case rclcpp::HistoryPolicy::SystemDefault:
-    return "SystemDefault";
-  case rclcpp::HistoryPolicy::Unknown:
-    return "Unknown";
-  }
-  return "Invalid";
+  const char *key = QMetaEnum::fromType<Enum>().valueToKey( value );
+  return key != nullptr ? key : "Invalid";
 }
 } // namespace
 
 std::string QoSWrapper::toString() const
 {
   std::string result = "QoS(";
-  result += "reliability: " + to_string( qos_.reliability() ) + ", ";
-  result += "durability: " + to_string( qos_.durability() ) + ", ";
-  result += "history: " + to_string( qos_.history() ) + ", ";
-  result += "depth: " + std::to_string( qos_.depth() ) + ")";
+  result += "reliability: " + to_string( reliability() ) + ", ";
+  result += "durability: " + to_string( durability() ) + ", ";
+  result += "history: " + to_string( history() ) + ", ";
+  result += "depth: " + std::to_string( depth() ) + ")";
   return result;
 }
 } // namespace qml6_ros2_plugin

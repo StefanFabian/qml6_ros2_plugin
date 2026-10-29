@@ -18,6 +18,20 @@ Example
     }
   }
 
+Resources
+---------
+
+Arbitrary resources registered in the index can be queried with ``getResource(resourceType, resourceName)``.
+It returns an object with the resource's ``content`` and the ``prefix`` of the install location it was found in,
+or ``undefined`` if the resource does not exist.
+Type and name may only contain letters, digits, ``_`` and ``-``.
+
+.. code-block:: qml
+
+  let resource = AmentIndex.getResource("package_run_dependencies", "my_package")
+  if (resource !== undefined)
+    console.log("Found in", resource.prefix, "with content:", resource.content)
+
 API
 ---
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(qml6_ros2_plugin VERSION 1.0.0)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 #set(CMAKE_BUILD_TYPE "Debug")
 
@@ -13,6 +13,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(rcl REQUIRED)
+find_package(rcl_action REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rmw REQUIRED)
 find_package(ros_babel_fish REQUIRED)
 find_package(tf2_ros REQUIRED)
 
@@ -78,6 +82,7 @@ set(SOURCES
   src/qobject_ros2.cpp
   src/qos.cpp
   src/ros2.cpp
+  src/ros2_graph.cpp
   src/ros2_init_options.cpp
   src/service_client.cpp
   src/service_server.cpp
@@ -97,7 +102,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Qt6::Core Qt6::Multimedia Qt6::Qml Qt6::Quick
   ${YAML_CPP_LIBRARIES}
   ament_index_cpp::ament_index_cpp
+  rcl::rcl
+  rcl_action::rcl_action
   rclcpp::rclcpp
+  rmw::rmw
   image_transport::image_transport
   ros_babel_fish::ros_babel_fish
   tf2_ros::tf2_ros
@@ -114,16 +122,21 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ros_babel_fish_test_msgs REQUIRED)
   find_package(example_interfaces REQUIRED)
+  find_package(rclcpp_action REQUIRED)
+  find_package(std_msgs REQUIRED)
   find_package(std_srvs REQUIRED)
   find_package(Qt6Test REQUIRED)
 
-  set(TEST_DEPENDENCIES ${example_interfaces_TARGETS} ${ros_babel_fish_test_msgs_TARGETS} ${std_srvs_TARGETS})
+  set(TEST_DEPENDENCIES ${example_interfaces_TARGETS} ${rclcpp_action_TARGETS} ${ros_babel_fish_test_msgs_TARGETS} ${std_srvs_TARGETS})
 
   ament_add_gtest(test_communication test/communication.cpp)
   target_link_libraries(test_communication ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
 
   ament_add_gtest(test_server_communication test/server_communication.cpp)
   target_link_libraries(test_server_communication ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
+
+  ament_add_gtest(test_node_graph test/node_graph.cpp)
+  target_link_libraries(test_node_graph ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
 
   ament_add_gtest(test_tf_buffer test/tf_buffer.cpp)
   target_link_libraries(test_tf_buffer ${PROJECT_NAME} ${TEST_DEPENDENCIES} Qt6::Test)
@@ -136,11 +149,17 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_logging test/logging.cpp)
   target_link_libraries(test_logging ${PROJECT_NAME})
-  #
+
+  ament_add_gtest(test_qos test/qos.cpp)
+  target_link_libraries(test_qos ${PROJECT_NAME})
+
+  ament_add_gtest(test_ament_index test/ament_index.cpp)
+  target_link_libraries(test_ament_index ${PROJECT_NAME})
+
   ament_add_gtest(test_io test/io.cpp)
   target_link_libraries(test_io ${PROJECT_NAME} ${TEST_DEPENDENCIES})
 
-  install(DIRECTORY test/test_io DESTINATION share/qml6_ros2_plugin/test/)
+  install(DIRECTORY test/test_io test/test_ament_index DESTINATION share/qml6_ros2_plugin/test/)
 endif()
 
 # to run: catkin build --this --no-deps -DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -v --catkin-make-args ${PROJECT_NAME}_coverage
@@ -224,7 +243,7 @@ else()
   # The export is only necessary if part of a ROS2 workspace
   ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
   ament_export_include_directories(include)
-  ament_export_dependencies(ament_index_cpp rclcpp image_transport ros_babel_fish tf2_ros Qt6Core Qt6Qml Qt6Quick Qt6Multimedia)
+  ament_export_dependencies(ament_index_cpp rcl rcl_action rclcpp rmw image_transport ros_babel_fish tf2_ros Qt6Core Qt6Qml Qt6Quick Qt6Multimedia)
 endif()
 
 

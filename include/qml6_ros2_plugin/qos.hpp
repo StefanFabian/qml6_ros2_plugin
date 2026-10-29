@@ -12,11 +12,61 @@
 namespace qml6_ros2_plugin
 {
 
-//! @brief Wrapper to enable setting QoS settings in QML.
+namespace qos_reliability_policy
+{
+Q_NAMESPACE
+//! Mirrors rclcpp::ReliabilityPolicy.
+enum ReliabilityPolicy {
+  BestEffort = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+  Reliable = RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  SystemDefault = RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT,
+  BestAvailable = RMW_QOS_POLICY_RELIABILITY_BEST_AVAILABLE,
+  Unknown = RMW_QOS_POLICY_RELIABILITY_UNKNOWN
+};
+Q_ENUM_NS( ReliabilityPolicy )
+} // namespace qos_reliability_policy
+
+namespace qos_durability_policy
+{
+Q_NAMESPACE
+//! Mirrors rclcpp::DurabilityPolicy.
+enum DurabilityPolicy {
+  Volatile = RMW_QOS_POLICY_DURABILITY_VOLATILE,
+  TransientLocal = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+  SystemDefault = RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT,
+  BestAvailable = RMW_QOS_POLICY_DURABILITY_BEST_AVAILABLE,
+  Unknown = RMW_QOS_POLICY_DURABILITY_UNKNOWN
+};
+Q_ENUM_NS( DurabilityPolicy )
+} // namespace qos_durability_policy
+
+namespace qos_history_policy
+{
+Q_NAMESPACE
+//! Mirrors rclcpp::HistoryPolicy.
+enum HistoryPolicy {
+  KeepLast = RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+  KeepAll = RMW_QOS_POLICY_HISTORY_KEEP_ALL,
+  SystemDefault = RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT,
+  Unknown = RMW_QOS_POLICY_HISTORY_UNKNOWN
+};
+Q_ENUM_NS( HistoryPolicy )
+} // namespace qos_history_policy
+
+//! @brief Wrapper to enable setting and reading QoS settings in QML.
 //! Defaults to 1 depth, best effort reliability and volatile durability.
 class QoSWrapper
 {
   Q_GADGET
+  //! The reliability policy. See ReliabilityPolicy. (readonly)
+  Q_PROPERTY( qml6_ros2_plugin::qos_reliability_policy::ReliabilityPolicy reliability READ reliability )
+  //! The durability policy. See DurabilityPolicy. (readonly)
+  Q_PROPERTY( qml6_ros2_plugin::qos_durability_policy::DurabilityPolicy durability READ durability )
+  //! The history policy. See HistoryPolicy. (readonly)
+  Q_PROPERTY( qml6_ros2_plugin::qos_history_policy::HistoryPolicy history READ history )
+  //! The history depth.
+  //! If the history policy is KeepLast, this is the number of messages to keep. (readonly)
+  Q_PROPERTY( int depth READ depth )
 public:
   QoSWrapper();
   explicit QoSWrapper( rclcpp::QoS qos );
@@ -40,9 +90,13 @@ public:
   //! @param depth The number of messages to keep.
   Q_INVOKABLE qml6_ros2_plugin::QoSWrapper keep_last( int depth );
 
-  //! @brief Returns the depth of the QoS policy. If history policy is set to keep_last, this is the
-  //!        number of messages to keep.
-  Q_INVOKABLE int depth() const;
+  qos_reliability_policy::ReliabilityPolicy reliability() const;
+
+  qos_durability_policy::DurabilityPolicy durability() const;
+
+  qos_history_policy::HistoryPolicy history() const;
+
+  int depth() const;
 
   const rclcpp::QoS &rclcppQoS() const { return qos_; }
 
