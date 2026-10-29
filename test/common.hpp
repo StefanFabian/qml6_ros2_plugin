@@ -5,7 +5,6 @@
 #define ROS_BABEL_FISH_TEST_COMMON_H
 
 #include <ros_babel_fish_test_msgs/msg/test_array.hpp>
-#include <rosidl_buffer/buffer.hpp>
 
 #include <QString>
 #include <gtest/gtest.h>

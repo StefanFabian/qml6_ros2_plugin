@@ -15,7 +15,6 @@
 #include <ros_babel_fish/babel_fish.hpp>
 #include <ros_babel_fish_test_msgs/msg/test_array.hpp>
 #include <ros_babel_fish_test_msgs/msg/test_message.hpp>
-#include <rosidl_buffer/buffer.hpp>
 
 #include <QDateTime>
 #include <QVariant>
