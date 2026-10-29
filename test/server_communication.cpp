@@ -539,6 +539,18 @@ int main( int argc, char **argv )
   executor->add_node( node );
   Ros2QmlSingletonWrapper wrapper;
   wrapper.init( "server_communication_qml" );
+  // FastDDS reports a service ready once the client matched it, before the server matched the
+  // client, so a request sent before both participants discovered each other is dropped.
+  auto knows = []( const rclcpp::Node::SharedPtr &n, const std::string &other ) {
+    const auto names = n->get_node_names();
+    return std::find( names.begin(), names.end(), other ) != names.end();
+  };
+  waitFor(
+      [&]() {
+        return knows( node, "/server_communication_qml" ) &&
+               knows( Ros2Qml::getInstance().node(), "/server_communication" );
+      },
+      10s );
   int result = RUN_ALL_TESTS();
   executor->remove_node( node );
   executor.reset();

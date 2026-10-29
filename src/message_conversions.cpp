@@ -168,6 +168,16 @@ struct MessageToQVariantConverter {
     return QVariant::fromValue( int( msg.getValue() ) );
   }
 
+  QVariant operator()( const ValueMessage<int64_t> &msg )
+  {
+    return QVariant::fromValue( static_cast<qlonglong>( msg.getValue() ) );
+  }
+
+  QVariant operator()( const ValueMessage<uint64_t> &msg )
+  {
+    return QVariant::fromValue( static_cast<qulonglong>( msg.getValue() ) );
+  }
+
   QVariant operator()( const ValueMessage<long double> &msg )
   {
     return QVariant::fromValue( static_cast<double>( msg.getValue() ) );
@@ -232,6 +242,30 @@ struct ArrayToQVariantListConverter {
     result.reserve( array.size() );
     for ( size_t i = 0; i < array.size(); ++i ) {
       result.append( QVariant::fromValue( int( array[i] ) ) );
+    }
+    return result;
+  }
+
+  // On LP64 int64_t is long which maps to QMetaType::Long. QJSEngine can not convert that to a JS
+  // number, so store it as qlonglong (LongLong), mirroring Array::at.
+  template<bool BOUNDED, bool FIXED_LENGTH>
+  QVariantList operator()( const ArrayMessage_<int64_t, BOUNDED, FIXED_LENGTH> &array )
+  {
+    QVariantList result;
+    result.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i ) {
+      result.append( QVariant::fromValue( static_cast<qlonglong>( array[i] ) ) );
+    }
+    return result;
+  }
+
+  template<bool BOUNDED, bool FIXED_LENGTH>
+  QVariantList operator()( const ArrayMessage_<uint64_t, BOUNDED, FIXED_LENGTH> &array )
+  {
+    QVariantList result;
+    result.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i ) {
+      result.append( QVariant::fromValue( static_cast<qulonglong>( array[i] ) ) );
     }
     return result;
   }
