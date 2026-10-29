@@ -39,6 +39,8 @@ set(SOURCES
   include/qml6_ros2_plugin/internal/window_rate_tracker.hpp
   include/qml6_ros2_plugin/array.hpp
   include/qml6_ros2_plugin/action_client.hpp
+  include/qml6_ros2_plugin/action_server.hpp
+  include/qml6_ros2_plugin/action_server_goal_handle.hpp
   include/qml6_ros2_plugin/ament_index.hpp
   include/qml6_ros2_plugin/babel_fish_dispenser.hpp
   include/qml6_ros2_plugin/goal_handle.hpp
@@ -54,6 +56,7 @@ set(SOURCES
   include/qml6_ros2_plugin/ros2.hpp
   include/qml6_ros2_plugin/ros2_init_options.hpp
   include/qml6_ros2_plugin/service_client.hpp
+  include/qml6_ros2_plugin/service_server.hpp
   include/qml6_ros2_plugin/subscription.hpp
   include/qml6_ros2_plugin/tf_buffer.hpp
   include/qml6_ros2_plugin/tf_frame_info.hpp
@@ -63,6 +66,8 @@ set(SOURCES
   include/qml6_ros2_plugin/time.hpp
   src/array.cpp
   src/action_client.cpp
+  src/action_server.cpp
+  src/action_server_goal_handle.cpp
   src/ament_index.cpp
   src/babel_fish_dispenser.cpp
   src/goal_handle.cpp
@@ -80,6 +85,7 @@ set(SOURCES
   src/ros2_graph.cpp
   src/ros2_init_options.cpp
   src/service_client.cpp
+  src/service_server.cpp
   src/subscription.cpp
   src/tf_buffer.cpp
   src/tf_transform.cpp
@@ -116,6 +122,10 @@ if(BUILD_TESTING)
   ament_add_gtest(test_communication test/communication.cpp)
   ament_target_dependencies(test_communication ${TEST_DEPENDENCIES})
   target_link_libraries(test_communication ${PROJECT_NAME} Qt6::Test)
+
+  ament_add_gtest(test_server_communication test/server_communication.cpp)
+  ament_target_dependencies(test_server_communication ${TEST_DEPENDENCIES})
+  target_link_libraries(test_server_communication ${PROJECT_NAME} Qt6::Test)
 
   ament_add_gtest(test_node_graph test/node_graph.cpp)
   ament_target_dependencies(test_node_graph ${TEST_DEPENDENCIES})

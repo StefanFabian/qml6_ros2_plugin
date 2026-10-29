@@ -5,6 +5,7 @@
 #include "logging.hpp"
 #include "qml6_ros2_plugin/babel_fish_dispenser.hpp"
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
+#include "qml6_ros2_plugin/helpers/callback_registry.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
 
 #include <QJSEngine>
@@ -131,10 +132,7 @@ void ServiceClient::sendRequestAsync( const QVariantMap &req, const QJSValue &ca
     engine_ = qjsEngine( this );
   }
   pending_requests_++;
-  int callback_id = generateInternalCallbackId();
-  while ( pending_callbacks_.find( callback_id ) != pending_callbacks_.end() ) {
-    callback_id = generateInternalCallbackId();
-  }
+  int callback_id = freshId( pending_callbacks_ );
   pending_callbacks_[callback_id] = callback;
   if ( !isServiceReady() ) {
     QML_ROS2_PLUGIN_DEBUG( "Service '%s' not ready, waiting up to %d ms.",
@@ -188,23 +186,15 @@ void ServiceClient::invokeCallback( int id, const QVariant &result )
         "ServiceClient: Failed to get QJSEngine in invokeCallback. Can not invoke callback." );
     return;
   }
-  auto it = pending_callbacks_.find( id );
-  if ( it == pending_callbacks_.end() ) {
+  QJSValue *callback = findPending( pending_callbacks_, id );
+  if ( callback == nullptr ) {
     QML_ROS2_PLUGIN_ERROR(
         "ServiceClient: Could not find pending callback with ID %d in invokeCallback. Can not "
         "invoke callback.",
         id );
     return;
   }
-  const QJSValue &callback = it->second;
-  callback.call( { engine->toScriptValue( result ) } );
-  pending_callbacks_.erase( it );
-}
-
-int ServiceClient::generateInternalCallbackId()
-{
-  // Create a unique incrementing internal goal ID
-  static std::atomic<int> current_id = 0;
-  return current_id.fetch_add( 1 );
+  callback->call( { engine->toScriptValue( result ) } );
+  pending_callbacks_.erase( id );
 }
 } // namespace qml6_ros2_plugin
