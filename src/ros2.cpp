@@ -117,7 +117,7 @@ void Ros2Qml::init( const QString &name, const QStringList &argv, Ros2InitOption
   executor_options.context = context_;
   // StaticSingleThreadedExecutor may be a bit faster but will keep a reference to the subscription
   // and therefore not unsubscribe if the subscription is reset.
-  auto executor = rclcpp::experimental::executors::EventsExecutor::make_unique( executor_options );
+  auto executor = rclcpp::executors::EventsCBGExecutor::make_unique( executor_options );
   executor->add_node( node_ );
   graph_event_ = node_->get_node_graph_interface()->get_graph_event();
   graph_timer_.start();

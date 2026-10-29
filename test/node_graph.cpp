@@ -18,12 +18,13 @@
 using namespace qml6_ros2_plugin;
 using namespace std::chrono_literals;
 
+rclcpp::executors::SingleThreadedExecutor::UniquePtr executor;
 rclcpp::Node::SharedPtr node;
 
 void processEvents()
 {
   QCoreApplication::processEvents();
-  rclcpp::spin_some( node );
+  executor->spin_some( 1ms );
 }
 
 bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeout = 3s )
@@ -33,7 +34,6 @@ bool waitFor( const std::function<bool()> &pred, std::chrono::milliseconds timeo
     processEvents();
     if ( pred() )
       return true;
-    std::this_thread::sleep_for( 1ms );
   }
   return false;
 }
@@ -269,9 +269,12 @@ int main( int argc, char **argv )
   rclcpp::init( argc, argv );
   node = rclcpp::Node::make_shared( "node_graph",
                                     rclcpp::NodeOptions().use_intra_process_comms( false ) );
+  executor = rclcpp::executors::SingleThreadedExecutor::make_unique();
+  executor->add_node( node );
   Ros2QmlSingletonWrapper wrapper;
   wrapper.init( "node_graph_qml" );
   int result = RUN_ALL_TESTS();
+  executor.reset();
   node.reset();
   wrapper.shutdown();
   rclcpp::shutdown();
