@@ -92,14 +92,13 @@ TEST( Ros2LifeCycle, testLifeCycle )
   // After shutdown everything should be uninitialized again
   EXPECT_FALSE( qml6_ros2_plugin::Ros2Qml::getInstance().isInitialized() );
   EXPECT_FALSE( qml6_ros2_plugin::TfTransformListener::getInstance().isInitialized() );
+  EXPECT_FALSE( rclcpp::contexts::get_global_default_context()->is_valid() );
 }
 
 int main( int argc, char **argv )
 {
   testing::InitGoogleTest( &argc, argv );
   QCoreApplication app( argc, argv );
-  rclcpp::init( argc, argv );
-  int result = RUN_ALL_TESTS();
-  rclcpp::shutdown();
-  return result;
+  // No rclcpp::init: Ros2.init must not depend on a valid global default context, like in a QML app.
+  return RUN_ALL_TESTS();
 }

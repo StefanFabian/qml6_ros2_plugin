@@ -118,6 +118,8 @@ void Ros2Qml::init( const QString &name, const QStringList &argv, Ros2InitOption
   // StaticSingleThreadedExecutor may be a bit faster but will keep a reference to the subscription
   // and therefore not unsubscribe if the subscription is reset.
 #if __has_include( <rclcpp/executors/events_cbg_executor/events_cbg_executor.hpp> )
+  // rclcpp bug: EventsCBGExecutor builds its Executor base on the global default context, not ours.
+  ensureGlobalDefaultContextInitialized();
   auto executor = rclcpp::executors::EventsCBGExecutor::make_unique( executor_options );
 #else
   auto executor = rclcpp::experimental::executors::EventsExecutor::make_unique( executor_options );
@@ -138,8 +140,8 @@ void Ros2Qml::init( const QString &name, const QStringList &argv, Ros2InitOption
 void Ros2Qml::ensureGlobalDefaultContextInitialized()
 {
   // rclcpp_action's goal-expiry thread sleeps on the global default context (it hardcodes it instead
-  // of the node's context), so an ActionServer added to the executor needs it valid. Only ensure it
-  // is valid and never tear it down: an embedding application may rely on the default context.
+  // of the node's context), so an ActionServer added to the executor needs it valid. shutdown() only
+  // tears it down if initialized here: an embedding application may rely on the default context.
   auto global_context = rclcpp::contexts::get_global_default_context();
   if ( global_context->is_valid() )
     return;
@@ -147,6 +149,7 @@ void Ros2Qml::ensureGlobalDefaultContextInitialized()
   for ( size_t i = 0; i < init_args_.size(); ++i ) p_args[i] = init_args_[i].c_str();
   global_context->init( static_cast<int>( init_args_.size() ), p_args.data(),
                         global_context_init_options_ );
+  owned_global_context_ = global_context;
 }
 
 void Ros2Qml::shutdown()
@@ -171,6 +174,11 @@ void Ros2Qml::shutdown()
   }
   node_ = nullptr;
   context_ = nullptr;
+  if ( owned_global_context_ != nullptr ) {
+    // Some middlewares (e.g. zenoh) crash if a context is still valid at process exit.
+    rclcpp::shutdown( owned_global_context_, "Shutting down Ros2Qml." );
+    owned_global_context_ = nullptr;
+  }
   QML_ROS2_PLUGIN_DEBUG( "Ros2Qml shut down." );
 }
 

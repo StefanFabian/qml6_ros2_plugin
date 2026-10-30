@@ -205,6 +205,7 @@ public:
    * the arguments passed to init. rclcpp_action's goal-expiry thread sleeps on the global default
    * context rather than the node's, so an ActionServer needs it valid before being added to the
    * executor. Call before creating an action server. No-op until init() has been called.
+   * A global default context initialized by this method is shut down by shutdown().
    */
   void ensureGlobalDefaultContextInitialized();
 
@@ -247,6 +248,9 @@ private:
   // default context (see ensureGlobalDefaultContextInitialized).
   std::vector<std::string> init_args_;
   rclcpp::InitOptions global_context_init_options_;
+  // Set if ensureGlobalDefaultContextInitialized initialized it. Owning the pointer keeps it usable
+  // when shutdown() runs from our destructor after the global default context's static is gone.
+  std::shared_ptr<rclcpp::Context> owned_global_context_;
 };
 
 class Ros2QmlSingletonWrapper : public QObject

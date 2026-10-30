@@ -18,12 +18,12 @@ Quick install all dependencies for ROS 2 jazzy (otherwise replace jazzy with you
 sudo apt install qmlscene-qt6 qml6-module-qtmultimedia qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window ros-jazzy-turtle-tf2-py ros-jazzy-usb-cam
 ```
 
-Run using: `qmlscene -qt=qt6 FILE`
+Run using: `qmlscene6 FILE`
 
 **Example:**
 
 ```
-qmlscene -qt=qt6 publisher.qml
+qmlscene6 publisher.qml
 ```
 
 ----------
