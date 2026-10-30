@@ -51,6 +51,11 @@ QString AmentIndex::getPackageShareDirectory( const QString &package_name )
   }
 }
 
+QString AmentIndex::getPackageSharePath( const QString &package_name )
+{
+  return getPackageShareDirectory( package_name );
+}
+
 QString AmentIndex::getPackagePrefix( const QString &package_name )
 {
   if ( package_name.isEmpty() ) {

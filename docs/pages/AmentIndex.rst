@@ -13,7 +13,7 @@ Example
     id: packageSelector
     model: AmentIndex.getPackages()
     onCurrentTextChanged: {
-      let packageShare = AmentIndex.getPackageShareDirectory(currentText)
+      let packageShare = AmentIndex.getPackageSharePath(currentText)
       console.log("Package share directory for", currentText, "is", packageShare)
     }
   }

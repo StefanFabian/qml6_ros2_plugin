@@ -31,7 +31,7 @@ ApplicationWindow {
       text: "Package prefix: " + (packageComboBox.currentText && AmentIndex.getPackagePrefix(packageComboBox.currentText))
     }
     Text {
-      text: "Share directory: " + (packageComboBox.currentText && AmentIndex.getPackageShareDirectory(packageComboBox.currentText))
+      text: "Share directory: " + (packageComboBox.currentText && AmentIndex.getPackageSharePath(packageComboBox.currentText))
     }
     RowLayout {
       Text {

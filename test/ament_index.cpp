@@ -153,6 +153,13 @@ TEST_F( AmentIndexTestData, getPackageShareDirectory )
   EXPECT_EQ( index_.getPackageShareDirectory( "" ), QString() );
 }
 
+TEST_F( AmentIndexTestData, getPackageSharePath )
+{
+  EXPECT_EQ( index_.getPackageSharePath( "overlay_pkg" ), str( overlay_ / "share" / "overlay_pkg" ) );
+  EXPECT_EQ( index_.getPackageSharePath( "unknown_pkg" ), QString() );
+  EXPECT_EQ( index_.getPackageSharePath( "" ), QString() );
+}
+
 TEST_F( AmentIndexTestData, getPackages )
 {
   EXPECT_EQ( index_.getPackages(), QStringList( { "overlay_pkg", "shared_pkg", "underlay_pkg" } ) );
