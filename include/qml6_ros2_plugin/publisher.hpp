@@ -21,7 +21,7 @@ class Publisher : public QObjectRos2
   //! The type of the published messages, e.g., geometry_msgs/Pose. (readonly)
   Q_PROPERTY( QString type READ type )
   //! The topic this Publisher publishes messages on. This property is only valid if the publisher is already advertised! (readonly)
-  Q_PROPERTY( QString topic READ topic )
+  Q_PROPERTY( QString topic READ topic NOTIFY topicChanged )
   //! The queue size of this Publisher. This is the depth if the history policy of the QoS is set to keep_last. (readonly)
   Q_PROPERTY( quint32 queueSize READ queueSize )
   //! The Quality of Service settings of this publisher.
@@ -54,14 +54,26 @@ public:
    */
   Q_INVOKABLE bool publish( const QVariantMap &msg );
 
+  /*!
+   * Immediately releases the underlying ROS publisher. The Publisher can not be used afterwards.
+   * Use this when replacing a Publisher, e.g., to change the message type on the same topic, since
+   * a Publisher otherwise lives until it is garbage collected and blocks other message types on
+   * its topic until then.
+   */
+  Q_INVOKABLE void shutdown();
+
 signals:
 
   /*!
    * Fired once this Publisher was advertised.
-   * This is either done at construction or immediately after ROS is initialized.
+   * This is either done at construction, immediately after ROS is initialized or, if the topic is
+   * still blocked by a publisher with a different type in this application, once it was released.
    * Since this is only fired once, you should check if the Publisher is already advertised using the isAdvertised property.
    */
   void advertised();
+
+  //! Fired if the topic changed after creating the publisher.
+  void topicChanged();
 
 protected:
   void onRos2Initialized() override;
@@ -79,6 +91,7 @@ protected:
   std::string std_type_;
   QString topic_;
   bool is_advertised_;
+  bool is_shutdown_ = false;
 };
 } // namespace qml6_ros2_plugin
 

@@ -7,6 +7,8 @@
 #include "qml6_ros2_plugin/conversion/message_conversions.hpp"
 #include "qml6_ros2_plugin/ros2.hpp"
 
+#include <rclcpp/exceptions.hpp>
+
 using namespace ros_babel_fish;
 using namespace qml6_ros2_plugin::conversion;
 
@@ -18,6 +20,8 @@ Publisher::Publisher( QString topic, QString type, const QoSWrapper &qos )
 {
   std_type_ = type_.toStdString();
   babel_fish_ = BabelFishDispenser::getBabelFish();
+  advertise_timer_.setInterval( 50 );
+  connect( &advertise_timer_, &QTimer::timeout, this, &Publisher::advertise );
 
   if ( isRosInitialized() )
     advertise();
@@ -25,7 +29,13 @@ Publisher::Publisher( QString topic, QString type, const QoSWrapper &qos )
 
 Publisher::~Publisher() = default;
 
-QString Publisher::topic() const { return QString::fromStdString( publisher_->get_topic_name() ); }
+QString Publisher::topic() const
+{
+  if ( !publisher_ ) {
+    return topic_;
+  }
+  return QString::fromStdString( publisher_->get_topic_name() );
+}
 
 const QString &Publisher::type() const { return type_; }
 
@@ -56,16 +66,26 @@ bool Publisher::publish( const QVariantMap &msg )
   return false;
 }
 
+void Publisher::shutdown()
+{
+  is_shutdown_ = true;
+  advertise_timer_.stop();
+  publisher_.reset();
+  is_advertised_ = false;
+}
+
 void Publisher::onRos2Initialized()
 {
   if ( !is_advertised_ )
     advertise();
 }
 
-void Publisher::onRos2Shutdown() { publisher_.reset(); }
+void Publisher::onRos2Shutdown() { shutdown(); }
 
 void Publisher::advertise()
 {
+  if ( is_shutdown_ )
+    return;
   if ( is_advertised_ )
     publisher_.reset();
   if ( type_.isEmpty() )
@@ -82,8 +102,19 @@ void Publisher::advertise()
     advertise_timer_.stop();
     is_advertised_ = true;
     emit advertised();
+    if ( topic_ != topic() )
+      emit topicChanged();
   } catch ( BabelFishException &ex ) {
     QML_ROS2_PLUGIN_ERROR( "Failed to create publisher: %s", ex.what() );
+  } catch ( rclcpp::exceptions::RCLError &ex ) {
+    // Usually the topic is still used with a different type by a publisher in this application that
+    // was not destroyed yet. Retry until it is released.
+    QML_ROS2_PLUGIN_WARN_THROTTLE( 5000, "Failed to create publisher on '%s', retrying: %s",
+                                   topic_.toStdString().c_str(), ex.what() );
+    advertise_timer_.start();
+  } catch ( std::exception &ex ) {
+    QML_ROS2_PLUGIN_ERROR( "Failed to create publisher on '%s': %s", topic_.toStdString().c_str(),
+                           ex.what() );
   }
 }
 } // namespace qml6_ros2_plugin

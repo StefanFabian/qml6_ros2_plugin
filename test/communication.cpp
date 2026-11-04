@@ -128,6 +128,35 @@ TEST( Communication, publisher )
   delete pub_singleton_glob;
 }
 
+TEST( Communication, publisherTypeChangeOnSameTopic )
+{
+  Ros2QmlSingletonWrapper wrapper;
+  std::unique_ptr<qml6_ros2_plugin::Publisher> int_pub( dynamic_cast<qml6_ros2_plugin::Publisher *>(
+      wrapper.createPublisher( "/type_change", "std_msgs/msg/Int32", 10 ) ) );
+  ASSERT_NE( int_pub, nullptr );
+  ASSERT_TRUE( waitFor( [&]() { return int_pub->isAdvertised(); } ) );
+
+  std::unique_ptr<qml6_ros2_plugin::Publisher> pose_pub;
+  ASSERT_NO_THROW( pose_pub.reset( dynamic_cast<qml6_ros2_plugin::Publisher *>(
+      wrapper.createPublisher( "/type_change", "geometry_msgs/msg/Pose", 10 ) ) ) );
+  ASSERT_NE( pose_pub, nullptr );
+  // Depending on the RMW, the topic is blocked by the publisher with the other type.
+  ASSERT_NO_THROW( waitFor( 200ms ) );
+  int_pub->shutdown();
+  EXPECT_FALSE( int_pub->isAdvertised() );
+  EXPECT_FALSE( int_pub->publish( { { "data", 42 } } ) );
+  ASSERT_TRUE( waitFor( [&]() { return pose_pub->isAdvertised(); } ) );
+
+  MessageStorage<geometry_msgs::msg::Pose> storage;
+  auto subscription = node->create_subscription<geometry_msgs::msg::Pose>(
+      "/type_change", 10,
+      [&storage]( geometry_msgs::msg::Pose::UniquePtr msg ) { storage.callback( *msg ); } );
+  ASSERT_TRUE( waitFor( [&]() { return pose_pub->getSubscriptionCount() == 1U; } ) );
+  pose_pub->publish( { { "position", QVariantMap{ { "x", 4.2 } } } } );
+  ASSERT_TRUE( waitFor( [&]() { return !storage.messages.empty(); } ) );
+  EXPECT_DOUBLE_EQ( storage.messages[0].position.x, 4.2 );
+}
+
 TEST( Communication, subscriber )
 {
   Ros2QmlSingletonWrapper wrapper;
